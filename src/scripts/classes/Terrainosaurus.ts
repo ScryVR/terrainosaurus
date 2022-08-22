@@ -1,4 +1,4 @@
-import { BufferGeometry, BufferAttribute } from "three";
+import { BufferGeometry, Float32BufferAttribute } from "three";
 
 export interface ITerrainosaurusProps {
   size: number;
@@ -26,6 +26,7 @@ export class Terrainosaurus {
     this.indices = [];
     this.size = props.size;
     this.offset = props.size / 2;
+    this.setInitialVertices(this.offset)
   }
   setInitialVertices(offset: number) {
     // Initialize such that we can use diamond-square displacement
@@ -41,7 +42,8 @@ export class Terrainosaurus {
         { pos: [-1, -1, -1], norm: [0, -1, 0], uv: [1, 0] },
       ])
       // This is technically less performant, but it's easier to visualize the plane this way.
-      .map((v) => ({ pos: v.pos.map((p) => p * offset), ...v }));
+      .map((v) => ({ ...v, pos: v.pos.map((p) => p * offset) }));
+    console.log("created initial vertices", this.vertices)
   }
   recursivelyGenerate() {
     // Add new interstitial vertices using bilinear interpolation
@@ -67,20 +69,21 @@ export class Terrainosaurus {
       },
       { positions: [], normals: [], uvs: [], color: [] }
     );
+    console.log("in createGeometry", { positions, normals, uvs })
     // Use parallel arrays to create BufferGeometry
     geometry.setAttribute(
       "position",
-      new BufferAttribute(new Float32Array(positions), positionNumComponents)
+      new Float32BufferAttribute(new Float32Array(positions), positionNumComponents)
     );
     geometry.setAttribute(
       "normal",
-      new BufferAttribute(new Float32Array(normals), normalNumComponents)
+      new Float32BufferAttribute(new Float32Array(normals), normalNumComponents)
     );
     geometry.setAttribute(
       "uv",
-      new BufferAttribute(new Float32Array(uvs), uvNumComponents)
+      new Float32BufferAttribute(new Float32Array(uvs), uvNumComponents)
     );
-    geometry.setIndex(this.indices);
+    // geometry.setIndex(this.indices);
     return geometry;
   }
 }
