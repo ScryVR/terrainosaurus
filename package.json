@@ -6,6 +6,7 @@
   "devDependencies": {
     "@babel/core": "^7.18.10",
     "@babel/preset-env": "^7.18.10",
+    "@types/three": "^0.143.1",
     "babel-loader": "^8.2.5",
     "cross-env": "^7.0.3",
     "css-loader": "^6.7.1",
@@ -28,5 +29,8 @@
     "dev:start": "live-server --open=./public/ --host=localhost --watch=./public/",
     "dev": "npm-run-all -p dev:*",
     "build": "cross-env NODE_ENV=production webpack"
+  },
+  "dependencies": {
+    "three": "^0.143.0"
   }
 }
