@@ -8,6 +8,13 @@ const terrainClient = new Terrainosaurus({
   highDetailRecursions: 0
 })
 
+terrainClient.recursivelyGenerate(0)
+terrainClient.recursivelyGenerate(0)
+terrainClient.recursivelyGenerate(0)
+terrainClient.recursivelyGenerate(12)
+terrainClient.recursivelyGenerate(24)
+terrainClient.recursivelyGenerate(24)
+
 const geometry = terrainClient.createGeometry()
 registerGeometry("terrainosaurus-terrain", {
   init() {
