@@ -23,3 +23,21 @@ renderChunk(currentChunk) // Once the new geometry is available, create an entit
 ```
 
 Note that `Terrainosaurus` is not responsible for anything related to scene management. Its only concern is generating the geometries. This is intended to improve separation of concerns and improve modularity.
+
+## Publishing
+
+The project structure is a bit goofy because this repository provides both a frontend project for showcasing Terrainosaur and an npm package.
+The frontend project results in Webpack output in `/public`, but the NPM package just consists of a file called `Terrainosaur.js`.
+
+The frontend project gets built with
+
+```bash
+yarn dev
+```
+
+The NPM package should be published with
+
+```bash
+yarn package
+npm publish
+```
