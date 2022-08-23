@@ -7,8 +7,22 @@
   </head>
   <body>
     <a-scene>
-      <a-entity id="terrain" position="0 -5 0" material="color: green; shader: standard; side: double;" geometry="primitive: terrainosaurus-terrain"></a-entity>
-      <a-entity id="example" material="color: cyan; shader: flat; side: double;" geometry="primitive: plane" position="0 2 -2"></a-entity>
+      <a-assets>
+        <img id="displacementMap" src="./assets/images/displacement.jpg" crossorigin="anonymous" />
+      </a-assets>
+      <a-entity
+        id="terrain"
+        position="0 -2 -50"
+        scale="5 5 5"
+        material="color: green; shader: standard; side: double; wireframe: false;"
+        geometry="primitive: terrainosaurus-terrain;">
+      </a-entity>
+      <!-- <a-entity
+        id="example"
+        material="color: cyan; shader: standard; side: double; displacementMap: #displacementMap; displacementScale: 0.04;"
+        geometry="primitive: plane; segmentsDepth: 400; segmentsWidth: 40; segmentsHeight: 40;"
+        position="0 2 -2">
+      </a-entity> -->
       <a-sky color="#eee"></a-sky>
     </a-scene>
   </body>
