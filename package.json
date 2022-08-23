@@ -29,7 +29,8 @@
     "dev:assets": "webpack --watch",
     "dev:start": "live-server --open=./public/ --host=localhost --watch=./public/",
     "dev": "npm-run-all -p dev:*",
-    "build": "cross-env NODE_ENV=production webpack"
+    "build": "cross-env NODE_ENV=production webpack",
+    "deploy": "aws --profile personal --recursive s3 cp --acl=public-read ./public s3://bernardo.lol/terrainosaurus"
   },
   "dependencies": {
     "aframe": "^1.3.0",
