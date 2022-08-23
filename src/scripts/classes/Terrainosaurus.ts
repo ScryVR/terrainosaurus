@@ -54,9 +54,14 @@ export class Terrainosaurus {
     if (vertexIndex % 6) {
       throw new Error("The given vertex does not represent the start of a cell")
     }
+    if (!this.vertices[vertexIndex]) {
+      console.warn(`Skipping recursion: Index ${vertexIndex + 6} exceeds bounds (${this.vertices.length})`)
+      return
+    }
     const verticesToReplace = this.vertices.slice(vertexIndex, vertexIndex + 6)
+    const recursions = this.vertices[vertexIndex].recursions
     // Get 4 corners of the square to compute the centroid.
-    const replacementVertices = getSubSquares({ vertices: verticesToReplace, recursions: this.vertices[vertexIndex].recursions })
+    let replacementVertices = getSubSquares({ vertices: verticesToReplace, recursions })
     
     this.vertices.splice(vertexIndex, 6, ...replacementVertices)
   }
@@ -118,6 +123,9 @@ function getSubSquares(props: IGetSquareProps): Array<IVertex> {
     p3: topRight,
     p4: topLeft
   })
+
+  const maxDisplacement = (bottomRight.pos[0] - bottomLeft.pos[0]) / 1.5
+  center.y += Math.random() * maxDisplacement - maxDisplacement / 2
   
   const baseVertex = { norm: [0,1,0], uv: [0,1], recursions }
   const newVertices = [
