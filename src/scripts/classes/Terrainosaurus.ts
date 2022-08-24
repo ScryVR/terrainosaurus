@@ -1,10 +1,17 @@
 import { BufferGeometry, Float32BufferAttribute } from "three";
 
+const VERTICES_PER_SQUARE = 6 // This will change to 4 if/when we do some memory optimizations
+
 export interface ITerrainosaurusProps {
   size: number;
   lowDetailRecursions: number;
   highDetailRecursions: number;
   seed: any;
+}
+
+export interface ISection {
+  vertices: Array<IVertex>;
+  absoluteIndex: number;
 }
 
 export interface IVertex {
@@ -44,35 +51,70 @@ export class Terrainosaurus {
       ])
       // This is technically less performant, but it's easier to visualize the plane this way.
       .map((v) => ({ ...v, pos: v.pos.map((p) => p * offset) }));
-    console.log("created initial vertices", this.vertices)
+  }
+  recurseFullMap(levels = 1) {
+  for (let level = 0; level < levels; level++) {
+    // Adds one level of recursion across the entire terrain map
+    for (let i = this.vertices.length - 6; i > -1; i -= 6) {
+      this.recursivelyGenerate(i)
+    }
+  }
+}
+  recurseSection({ vertices, absoluteIndex }: ISection, levels: number = 1) {
+    for (let level = 0; level < levels; level++) {
+    // Adds one level of recursion across the entire terrain map
+    for (let i = vertices.length - 6; i > -1; i -= 6) {
+      this.recursivelyGenerate(i + absoluteIndex)
+    }
+  }
+
   }
   recursivelyGenerate(vertexIndex: number) {
     /**
      * Replaces a given square with 4 smaller squares.
      * Each square is represented by 6 vertices, so we can get a slice from the vertices array, create a new one, and insert it.
      */
-    if (vertexIndex % 6) {
+    if (vertexIndex % VERTICES_PER_SQUARE) {
       throw new Error("The given vertex does not represent the start of a cell")
     }
     if (!this.vertices[vertexIndex]) {
-      console.warn(`Skipping recursion: Index ${vertexIndex + 6} exceeds bounds (${this.vertices.length})`)
+      console.warn(`Skipping recursion: Index ${vertexIndex} exceeds bounds (${this.vertices.length})`)
       return
     }
-    const verticesToReplace = this.vertices.slice(vertexIndex, vertexIndex + 6)
-    const recursions = this.vertices[vertexIndex].recursions
+    const verticesToReplace = this.vertices.slice(vertexIndex, vertexIndex + VERTICES_PER_SQUARE)
+    const recursions = this.vertices[vertexIndex].recursions + 1
     // Get 4 corners of the square to compute the centroid.
     let replacementVertices = getSubSquares({ vertices: verticesToReplace, recursions })
     
-    this.vertices.splice(vertexIndex, 6, ...replacementVertices)
+    this.vertices.splice(vertexIndex, VERTICES_PER_SQUARE, ...replacementVertices)
   }
-  createGeometry() {
+  getSection(path: Array<1 | 2 | 3 | 4>, section?: ISection): ISection {
+    section = section || { vertices: this.vertices, absoluteIndex: 0 }
+    return path.reduce((acc, quadrant: number, level) => {
+      const q1Index = 0 // Top left
+      const q2Index = Math.pow((acc.vertices[0].recursions - level), 2) * VERTICES_PER_SQUARE // Top right
+      const q3Index = q2Index + Math.pow(acc.vertices[q2Index].recursions - level, 2) * VERTICES_PER_SQUARE // Bottom left
+      const q4Index = q3Index + Math.pow(acc.vertices[q3Index].recursions - level, 2) * VERTICES_PER_SQUARE // Bottom left
+      const endIndex = q4Index + Math.pow(acc.vertices[q3Index].recursions - level, 2) * VERTICES_PER_SQUARE // End of quadrant
+      const quadrantIndices: Array<number> = [q1Index, q2Index, q3Index, q4Index, endIndex]
+      // Weird step to account for the fact that the vertex rendering order doesn't match
+      // conventional quadrant order in mathematics
+      if (quadrant < 3) {
+        quadrant = quadrant % 2 + 1 // 1 -> 2, 2 -> 1
+      }
+      acc.vertices = acc.vertices.slice(quadrantIndices[quadrant - 1], quadrantIndices[quadrant])
+      acc.absoluteIndex += quadrantIndices[quadrant - 1]
+      return acc
+    }, section)
+  }
+  createGeometry(section: Array<IVertex> = this.vertices) {
     // When called, generates a BufferGeometry out of the current vertices
     const geometry = new BufferGeometry();
     const positionNumComponents = 3;
     const normalNumComponents = 3;
     const uvNumComponents = 2;
     // Get vertex data in nice parallel arrays
-    const { positions, normals, uvs } = this.vertices.reduce(
+    const { positions, normals, uvs } = section.reduce(
       (acc: any, vertex) => {
         acc.positions = acc.positions.concat(vertex.pos);
         acc.normals = acc.normals.concat(vertex.norm);
@@ -84,7 +126,6 @@ export class Terrainosaurus {
       },
       { positions: [], normals: [], uvs: [], color: [] }
     );
-    console.log("in createGeometry", { positions, normals, uvs })
     // Use parallel arrays to create BufferGeometry
     geometry.setAttribute(
       "position",

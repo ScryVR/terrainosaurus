@@ -6,17 +6,18 @@
     <script src="./assets/scripts/bundle.js"></script>
   </head>
   <body>
-    <a-scene>
+    <a-scene _renderer="maxCanvasWidth: 320; maxCanvasHeight: 240;">
       <a-assets>
         <img id="displacementMap" src="./assets/images/displacement.jpg" crossorigin="anonymous" />
       </a-assets>
       <a-entity
         id="terrain"
-        position="0 -2 -50"
-        scale="5 5 5"
-        material="color: green; shader: standard; side: double; wireframe: false;"
+        position="0 -6 -30"
+        scale="1 1 1"
+        material="color: green; shader: standard; side: double; wireframe: true;"
         geometry="primitive: terrainosaurus-terrain;">
       </a-entity>
+      <a-sphere position="0 10 -10"></a-sphere>
       <!-- <a-entity
         id="example"
         material="color: cyan; shader: standard; side: double; displacementMap: #displacementMap; displacementScale: 0.04;"
