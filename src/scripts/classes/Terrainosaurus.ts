@@ -1,4 +1,5 @@
 import { BufferGeometry, Float32BufferAttribute } from "three";
+import { defaultGenerators, defaultGeneratorSelector } from "./generators";
 
 const VERTICES_PER_SQUARE = 6; // This will change to 4 if/when we do some memory optimizations
 
@@ -7,6 +8,8 @@ export interface ITerrainosaurusProps {
   lowDetailRecursions: number;
   highDetailRecursions: number;
   seed: any;
+  generators?: Array<(args: any) => any>;
+  generatorSelector?: (args: any) => number;
 }
 
 export interface ISection {
@@ -22,6 +25,11 @@ export interface IVertex {
   recursions: number;
 }
 
+interface IGetSquareProps {
+  vertices: Array<IVertex>;
+  recursions: number;
+}
+
 export class Terrainosaurus {
   size: number;
   offset: number;
@@ -29,11 +37,15 @@ export class Terrainosaurus {
   highDetailRecursions: number;
   vertices: Array<IVertex>;
   indices: Array<number>;
+  generators: Array<(args: any) => any>;
+  generatorSelector: (args: any) => number;
   constructor(props: ITerrainosaurusProps) {
     this.vertices = [];
     this.indices = [];
     this.size = props.size;
     this.offset = props.size / 2;
+    this.generatorSelector = props.generatorSelector || defaultGeneratorSelector;
+    this.generators = props.generators || defaultGenerators;
     this.setInitialVertices(this.offset);
   }
   setInitialVertices(offset: number) {
@@ -90,7 +102,7 @@ export class Terrainosaurus {
     );
     const recursions = this.vertices[vertexIndex].recursions + 1;
     // Get 4 corners of the square to compute the centroid.
-    let replacementVertices = getSubSquares({
+    let replacementVertices = this.getSubSquares({
       vertices: verticesToReplace,
       recursions,
     });
@@ -139,6 +151,137 @@ export class Terrainosaurus {
       return acc;
     }, section);
   }
+  getSubSquares(props: IGetSquareProps): Array<IVertex> {
+    const { recursions} = props;
+    const [bottomRight, bottomLeft, topRight, _, __, topLeft] = props.vertices;
+
+    let center = bilinearInterpolation({
+      p1: bottomRight,
+      p2: bottomLeft,
+      p3: topRight,
+      p4: topLeft,
+    });
+
+    const generator = this.generators[this.generatorSelector({ topLeft, topRight, bottomLeft, bottomRight })]
+    center = generator.call(this, center, { topLeft, topRight, bottomLeft, bottomRight });
+
+    const baseVertex = { norm: [0, 1, 0], uv: [0, 1], recursions };
+    const newVertices = [
+      // Top left square
+      { pos: [center.x, center.y, center.z], ...baseVertex },
+      {
+        pos: [
+          topLeft.pos[0],
+          (topLeft.pos[1] + bottomLeft.pos[1]) / 2,
+          center.z,
+        ],
+        ...baseVertex,
+      },
+      {
+        pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topLeft.pos[2]],
+        ...baseVertex,
+      },
+
+      {
+        pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topLeft.pos[2]],
+        ...baseVertex,
+      },
+      {
+        pos: [
+          topLeft.pos[0],
+          (topLeft.pos[1] + bottomLeft.pos[1]) / 2,
+          center.z,
+        ],
+        ...baseVertex,
+      },
+      topLeft,
+
+      // Top right square
+      {
+        pos: [
+          topRight.pos[0],
+          (topRight.pos[1] + bottomRight.pos[1]) / 2,
+          center.z,
+        ],
+        ...baseVertex,
+      },
+      { pos: [center.x, center.y, center.z], ...baseVertex },
+      topRight,
+
+      topRight,
+      { pos: [center.x, center.y, center.z], ...baseVertex },
+      {
+        pos: [
+          center.x,
+          (topLeft.pos[1] + topRight.pos[1]) / 2,
+          topRight.pos[2],
+        ],
+        ...baseVertex,
+      },
+
+      // Bottom left square
+      {
+        pos: [
+          center.x,
+          (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
+          bottomLeft.pos[2],
+        ],
+        ...baseVertex,
+      },
+      bottomLeft,
+      { pos: [center.x, center.y, center.z], ...baseVertex },
+
+      { pos: [center.x, center.y, center.z], ...baseVertex },
+      bottomLeft,
+      {
+        pos: [
+          topLeft.pos[0],
+          (topLeft.pos[1] + bottomLeft.pos[1]) / 2,
+          center.z,
+        ],
+        ...baseVertex,
+      },
+
+      // Bottom right square
+      bottomRight,
+      {
+        pos: [
+          center.x,
+          (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
+          bottomLeft.pos[2],
+        ],
+        ...baseVertex,
+      },
+      {
+        pos: [
+          topRight.pos[0],
+          (topRight.pos[1] + bottomRight.pos[1]) / 2,
+          center.z,
+        ],
+        ...baseVertex,
+      },
+
+      {
+        pos: [
+          topRight.pos[0],
+          (topRight.pos[1] + bottomRight.pos[1]) / 2,
+          center.z,
+        ],
+        ...baseVertex,
+      },
+      {
+        pos: [
+          center.x,
+          (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
+          bottomLeft.pos[2],
+        ],
+        ...baseVertex,
+      },
+      { pos: [center.x, center.y, center.z], ...baseVertex },
+    ];
+
+    return newVertices;
+  }
   createGeometry(section: Array<IVertex> = this.vertices) {
     // When called, generates a BufferGeometry out of the current vertices
     const geometry = new BufferGeometry();
@@ -177,147 +320,6 @@ export class Terrainosaurus {
     // geometry.setIndex(this.indices);
     return geometry;
   }
-}
-
-interface IGetSquareProps {
-  vertices: Array<IVertex>;
-  recursions: number;
-}
-
-/**
- *
- * @param props The set of vertices that need to be replaced
- * @returns An array of vertices that represent 4 squares that cover the same area as the original vertices
- */
-function getSubSquares(props: IGetSquareProps): Array<IVertex> {
-  const { recursions } = props;
-  const [bottomRight, bottomLeft, topRight, _, __, topLeft] = props.vertices;
-
-  const center = bilinearInterpolation({
-    p1: bottomRight,
-    p2: bottomLeft,
-    p3: topRight,
-    p4: topLeft,
-  });
-
-  const maxDisplacement = (bottomRight.pos[0] - bottomLeft.pos[0]) / 1.5;
-  center.y += Math.random() * maxDisplacement - maxDisplacement / 2;
-
-  const baseVertex = { norm: [0, 1, 0], uv: [0, 1], recursions };
-  const newVertices = [
-    // Top left square
-    { pos: [center.x, center.y, center.z], ...baseVertex },
-    {
-      pos: [topLeft.pos[0], (topLeft.pos[1] + bottomLeft.pos[1]) / 2, center.z],
-      ...baseVertex,
-    },
-    {
-      pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topLeft.pos[2]],
-      ...baseVertex,
-    },
-
-    {
-      pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topLeft.pos[2]],
-      ...baseVertex,
-    },
-    {
-      pos: [topLeft.pos[0], (topLeft.pos[1] + bottomLeft.pos[1]) / 2, center.z],
-      ...baseVertex,
-    },
-    topLeft,
-
-    // Top right square
-    {
-      pos: [
-        topRight.pos[0],
-        (topRight.pos[1] + bottomRight.pos[1]) / 2,
-        center.z,
-      ],
-      ...baseVertex,
-    },
-    { pos: [center.x, center.y, center.z], ...baseVertex },
-    topRight,
-
-    topRight,
-    { pos: [center.x, center.y, center.z], ...baseVertex },
-    {
-      pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topRight.pos[2]],
-      ...baseVertex,
-    },
-
-    // Bottom left square
-    {
-      pos: [
-        center.x,
-        (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
-        bottomLeft.pos[2],
-      ],
-      ...baseVertex,
-    },
-    bottomLeft,
-    { pos: [center.x, center.y, center.z], ...baseVertex },
-
-    { pos: [center.x, center.y, center.z], ...baseVertex },
-    bottomLeft,
-    {
-      pos: [topLeft.pos[0], (topLeft.pos[1] + bottomLeft.pos[1]) / 2, center.z],
-      ...baseVertex,
-    },
-
-    // Bottom right square
-    bottomRight,
-    {
-      pos: [
-        center.x,
-        (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
-        bottomLeft.pos[2],
-      ],
-      ...baseVertex,
-    },
-    {
-      pos: [
-        topRight.pos[0],
-        (topRight.pos[1] + bottomRight.pos[1]) / 2,
-        center.z,
-      ],
-      ...baseVertex,
-    },
-
-    {
-      pos: [
-        topRight.pos[0],
-        (topRight.pos[1] + bottomRight.pos[1]) / 2,
-        center.z,
-      ],
-      ...baseVertex,
-    },
-    {
-      pos: [
-        center.x,
-        (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
-        bottomLeft.pos[2],
-      ],
-      ...baseVertex,
-    },
-    { pos: [center.x, center.y, center.z], ...baseVertex },
-  ];
-
-  return newVertices;
-}
-
-function getSquare(
-  topLeft: IVertex,
-  size: number,
-  recursions: number
-): Array<IVertex> {
-  const baseVertex = {
-    norm: [0, 1, 0],
-    uv: [0, 1],
-    recursions: recursions + 1,
-  };
-  return [
-    { pos: [], ...baseVertex }, // bottom right
-  ];
 }
 
 interface IBilinearInterpolationProps {

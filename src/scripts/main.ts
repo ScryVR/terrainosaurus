@@ -1,7 +1,6 @@
 import { Terrainosaurus } from "./classes/Terrainosaurus";
 import { registerComponent, registerGeometry } from "aframe";
 import { Raycaster, Vector3 } from "three";
-
 const terrainClient = new Terrainosaurus({
   size: 20,
   seed: 0,
@@ -9,28 +8,44 @@ const terrainClient = new Terrainosaurus({
   highDetailRecursions: 0,
 });
 
-terrainClient.recurseFullMap();
+const generateGeometryComponent = function*() {
+  while (true) {
+    const name = `terrainosaurus-${Math.floor(Math.random() * 10000)}`
+    registerGeometry(name, {
+      init() {
+        terrainClient.recurseFullMap()
+        const geometry = terrainClient.createGeometry()
+        geometry.computeBoundingSphere()
+        geometry.computeVertexNormals()
+        this.geometry = geometry
+      }
+    })
+    yield name
+  }
+}
 
-terrainClient.recurseSection(terrainClient.getSection([3]));
-terrainClient.recurseSection(terrainClient.getSection([3, 1]));
+const generator = generateGeometryComponent()
 
-const geometry = terrainClient.createGeometry();
-registerGeometry("terrainosaurus-terrain", {
+registerComponent("terrainosaurus-terrain", {
   init() {
-    geometry.computeBoundingSphere();
-    geometry.computeVertexNormals();
-    this.geometry = geometry;
-  },
-});
+    terrainClient.recurseFullMap(4)
+    const geometry = generator.next()
+    this.el.setAttribute("geometry", { primitive: geometry.value })
 
-registerComponent("navigable-terrain", {
-  init() {
     this.camera = document.querySelector("[camera]");
     this.cameraWorldPosition = new Vector3();
     this.UP_VECTOR = new Vector3(0, 1, 0);
     this.DOWN_VECTOR = new Vector3(0, -1, 0);
     this.intersections = [];
     this.raycaster = new Raycaster(this.cameraWorldPosition, this.DOWN_VECTOR, 0, 100);
+
+    // setInterval(() => {
+    //   if (terrainClient.vertices[0].recursions > 5) {
+    //     return
+    //   }
+    //   const geometry = generator.next()
+    //   this.el.setAttribute("geometry", { primitive: geometry.value })
+    // }, 1000)
   },
   tick() {
     this.camera.object3D.getWorldPosition(this.cameraWorldPosition);
@@ -41,9 +56,10 @@ registerComponent("navigable-terrain", {
   handleIntersection() {
     if (this.intersections.length) {
       // Basic PD control - not a proper physics sim with gravity
+      // TODO: Consider how to handle IRL changes in elevation when in AR mode.
       const yGround = this.intersections[0].point.y
       const yCamera = this.cameraWorldPosition.y
-      const controlInput = 0.2 * (yGround - yCamera + 1.2)
+      const controlInput = 0.4 * (yGround - yCamera + 1.2)
       
       // Note that we shift the ground, not camera. This makes AR mode work better
       this.el.object3D.position.y = this.el.object3D.position.y - controlInput

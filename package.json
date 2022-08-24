@@ -1,6 +1,6 @@
 {
   "name": "terrainosaurus",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
@@ -31,7 +31,7 @@
     "dev": "npm-run-all -p dev:*",
     "build": "cross-env NODE_ENV=production webpack",
     "deploy": "aws --profile personal --recursive s3 cp --acl=public-read ./public s3://bernardo.lol/terrainosaurus",
-    "prepublishOnly": "tsc --outDir .build; mv .build/src/scripts/classes/Terrainosaurus.js ./index.js; rm -rf .build;"
+    "prepublishOnly": "tsc --outDir .build; mv .build/src/scripts/classes/Terrainosaurus.js ./index.js; mv .build/src/scripts/classes/generators.js ./generators.js; rm -rf .build;"
   },
   "dependencies": {
     "aframe": "^1.3.0",
