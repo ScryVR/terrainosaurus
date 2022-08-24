@@ -13,9 +13,11 @@
       <a-entity
         id="terrain"
         position="0 -6 -30"
-        scale="1 1 1"
-        material="color: green; shader: standard; side: double; wireframe: true;"
-        geometry="primitive: terrainosaurus-terrain;">
+        scale="5 5 5"
+        material="color: green; shader: standard; side: double; wireframe: false;"
+        geometry="primitive: terrainosaurus-terrain;"
+        navigable-terrain
+        >
       </a-entity>
       <a-sphere position="0 10 -10"></a-sphere>
       <!-- <a-entity
