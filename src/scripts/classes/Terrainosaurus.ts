@@ -8,8 +8,8 @@ export interface ITerrainosaurusProps {
   lowDetailRecursions: number;
   highDetailRecursions: number;
   seed: any;
-  generators?: Array<(args: any) => any>;
-  generatorSelector?: (args: any) => number;
+  generators?: Array<(...args: any) => any>;
+  generatorSelector?: (...args: any) => number;
 }
 
 export interface ISection {
@@ -44,7 +44,8 @@ export class Terrainosaurus {
     this.indices = [];
     this.size = props.size;
     this.offset = props.size / 2;
-    this.generatorSelector = props.generatorSelector || defaultGeneratorSelector;
+    this.generatorSelector =
+      props.generatorSelector || defaultGeneratorSelector;
     this.generators = props.generators || defaultGenerators;
     this.setInitialVertices(this.offset);
   }
@@ -152,7 +153,7 @@ export class Terrainosaurus {
     }, section);
   }
   getSubSquares(props: IGetSquareProps): Array<IVertex> {
-    const { recursions} = props;
+    const { recursions } = props;
     const [bottomRight, bottomLeft, topRight, _, __, topLeft] = props.vertices;
 
     let center = bilinearInterpolation({
@@ -162,39 +163,47 @@ export class Terrainosaurus {
       p4: topLeft,
     });
 
-    const generator = this.generators[this.generatorSelector({ topLeft, topRight, bottomLeft, bottomRight })]
-    center = generator.call(this, center, { topLeft, topRight, bottomLeft, bottomRight });
-
-    const baseVertex = { norm: [0, 1, 0], uv: [0, 1], recursions };
-    const newVertices = [
-      // Top left square
-      { pos: [center.x, center.y, center.z], ...baseVertex },
-      {
-        pos: [
-          topLeft.pos[0],
-          (topLeft.pos[1] + bottomLeft.pos[1]) / 2,
-          center.z,
-        ],
-        ...baseVertex,
-      },
-      {
-        pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topLeft.pos[2]],
-        ...baseVertex,
-      },
-
-      {
-        pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topLeft.pos[2]],
-        ...baseVertex,
-      },
-      {
-        pos: [
-          topLeft.pos[0],
-          (topLeft.pos[1] + bottomLeft.pos[1]) / 2,
-          center.z,
-        ],
-        ...baseVertex,
-      },
+    const generator =
+      this.generators[
+        this.generatorSelector({ topLeft, topRight, bottomLeft, bottomRight })
+      ];
+    center = generator.call(this, center, {
       topLeft,
+      topRight,
+      bottomLeft,
+      bottomRight,
+    });
+
+    const baseVertex = vertexGenerator(recursions);
+    const newVertices: any = [
+      // Top left square
+      { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
+      {
+        pos: [
+          topLeft.pos[0],
+          (topLeft.pos[1] + bottomLeft.pos[1]) / 2,
+          center.z,
+        ],
+        ...baseVertex.next().value,
+      },
+      {
+        pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topLeft.pos[2]],
+        ...baseVertex.next().value,
+      },
+
+      {
+        pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topLeft.pos[2]],
+        ...baseVertex.next().value,
+      },
+      {
+        pos: [
+          topLeft.pos[0],
+          (topLeft.pos[1] + bottomLeft.pos[1]) / 2,
+          center.z,
+        ],
+        ...baseVertex.next().value,
+      },
+      { ...topLeft, ...baseVertex.next().value },
 
       // Top right square
       {
@@ -203,20 +212,20 @@ export class Terrainosaurus {
           (topRight.pos[1] + bottomRight.pos[1]) / 2,
           center.z,
         ],
-        ...baseVertex,
+        ...baseVertex.next().value,
       },
-      { pos: [center.x, center.y, center.z], ...baseVertex },
-      topRight,
+      { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
+      { ...topRight, ...baseVertex.next().value },
 
-      topRight,
-      { pos: [center.x, center.y, center.z], ...baseVertex },
+      { ...topRight, ...baseVertex.next().value },
+      { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
       {
         pos: [
           center.x,
           (topLeft.pos[1] + topRight.pos[1]) / 2,
           topRight.pos[2],
         ],
-        ...baseVertex,
+        ...baseVertex.next().value,
       },
 
       // Bottom left square
@@ -226,31 +235,31 @@ export class Terrainosaurus {
           (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
           bottomLeft.pos[2],
         ],
-        ...baseVertex,
+        ...baseVertex.next().value,
       },
-      bottomLeft,
-      { pos: [center.x, center.y, center.z], ...baseVertex },
+      { ...bottomLeft, ...baseVertex.next().value },
+      { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
 
-      { pos: [center.x, center.y, center.z], ...baseVertex },
-      bottomLeft,
+      { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
+      { ...bottomLeft, ...baseVertex.next().value },
       {
         pos: [
           topLeft.pos[0],
           (topLeft.pos[1] + bottomLeft.pos[1]) / 2,
           center.z,
         ],
-        ...baseVertex,
+        ...baseVertex.next().value,
       },
 
       // Bottom right square
-      bottomRight,
+      { ...bottomRight, ...baseVertex.next().value },
       {
         pos: [
           center.x,
           (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
           bottomLeft.pos[2],
         ],
-        ...baseVertex,
+        ...baseVertex.next().value,
       },
       {
         pos: [
@@ -258,7 +267,7 @@ export class Terrainosaurus {
           (topRight.pos[1] + bottomRight.pos[1]) / 2,
           center.z,
         ],
-        ...baseVertex,
+        ...baseVertex.next().value,
       },
 
       {
@@ -267,7 +276,7 @@ export class Terrainosaurus {
           (topRight.pos[1] + bottomRight.pos[1]) / 2,
           center.z,
         ],
-        ...baseVertex,
+        ...baseVertex.next().value,
       },
       {
         pos: [
@@ -275,11 +284,10 @@ export class Terrainosaurus {
           (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
           bottomLeft.pos[2],
         ],
-        ...baseVertex,
+        ...baseVertex.next().value,
       },
-      { pos: [center.x, center.y, center.z], ...baseVertex },
+      { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
     ];
-
     return newVertices;
   }
   createGeometry(section: Array<IVertex> = this.vertices) {
@@ -353,3 +361,20 @@ function bilinearInterpolation(props: IBilinearInterpolationProps): {
     );
   }
 }
+
+const vertexGenerator = function* (recursions: number) {
+  while (1) {
+    yield { norm: [0, 1, 0], uv: [0, 1], recursions };
+    yield { norm: [0, 1, 0], uv: [1, 1], recursions };
+    yield { norm: [0, 1, 0], uv: [0, 0], recursions };
+
+    yield { norm: [0, 1, 0], uv: [0, 0], recursions };
+    yield { norm: [0, 1, 0], uv: [1, 1], recursions };
+    yield { norm: [0, 1, 0], uv: [1, 0], recursions };
+
+    // while(1) {
+    //   yield { norm: [0, 1, 0], uv: [0, 0], recursions };
+    // }
+
+  }
+};

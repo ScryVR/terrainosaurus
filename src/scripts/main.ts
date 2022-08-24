@@ -1,11 +1,28 @@
 import { Terrainosaurus } from "./classes/Terrainosaurus";
 import { registerComponent, registerGeometry } from "aframe";
 import { Raycaster, Vector3 } from "three";
+import { ICorners, IPoint } from "./classes/generators";
 const terrainClient = new Terrainosaurus({
   size: 20,
   seed: 0,
   lowDetailRecursions: 0,
   highDetailRecursions: 0,
+  generators: [
+    (center: IPoint, corners: ICorners): IPoint => {
+      const maxDisplacement = (corners.topRight.pos[0] - corners.topLeft.pos[0]) / 1.4
+      const getDisplacement = () => Math.random() * maxDisplacement - maxDisplacement / 2
+      let minRandom = getDisplacement()
+      // for (let i = 0; i < 0; i++) {
+      //   const displacement = getDisplacement()
+      //   minRandom = Math.abs(minRandom) > Math.abs(displacement) ? displacement : minRandom
+      // }
+      return {
+        x: center.x,
+        y: center.y + minRandom,
+        z: center.z
+      }
+    }
+  ]
 });
 
 const generateGeometryComponent = function*() {

@@ -4,13 +4,13 @@ export function defaultGeneratorSelector() {
   return Math.floor(Math.random() * this.generators.length)
 }
 
-interface IPoint {
+export interface IPoint {
   x: number;
   y: number;
   z: number;
 }
 
-interface ICorners {
+export interface ICorners {
   topLeft: IVertex;
   topRight: IVertex;
   bottomLeft: IVertex;

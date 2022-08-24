@@ -6,17 +6,24 @@
     <script src="./assets/scripts/bundle.js"></script>
   </head>
   <body>
-    <a-scene renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; physicallyCorrectLights: true;">
+    <a-scene fog="type: exponential; color: #AAA; density: 0.02;" renderer="maxCanvasWidth: 720; maxCanvasHeight: 600; antialiasing: false; physicallyCorrectLights: true;">
       <a-assets>
         <img id="displacementMap" src="./assets/images/displacement.jpg" crossorigin="anonymous" />
+        <img id="grassTexture" src="./assets/images/rock.jpg" crossorigin="anonymous" />
       </a-assets>
-      <a-entity light="type: ambient; color: #BBB"></a-entity>
-      <a-entity light="type: directional; color: #FFF; intensity: 3" position="-0.5 1 1"></a-entity>
+      <a-entity light="type: ambient; color: #FFF; intensity: 0.1;"></a-entity>
+      <a-entity
+        light="type: directional; color: #FFF; intensity: 3"
+        position="-2 1 1"
+        animation="property: position; to: 2 1 1; dur: 10000; dir: alternate; loop: true;"
+        animation__intensity="property: light.intensity; to: 1; dur: 10000; dir: alternate; loop: true;"
+      >
+      </a-entity>
       <a-entity
         id="terrain"
         position="0 -30 -30"
-        scale="5 5 5"
-        material="color: green; shader: standard; side: double; wireframe: false; roughness: 1;"
+        scale="10 10 10"
+        material="shader: standard; side: double; wireframe: false; roughness: 1; src: #grassTexture; repeat: 1 1;"
         terrainosaurus-terrain
         >
       </a-entity>
@@ -27,7 +34,7 @@
         geometry="primitive: plane; segmentsDepth: 400; segmentsWidth: 40; segmentsHeight: 40;"
         position="0 2 -2">
       </a-entity> -->
-      <a-sky color="#eee"></a-sky>
+      <a-sky color="#aae" material="fog: false;"></a-sky>
     </a-scene>
   </body>
 </html>
