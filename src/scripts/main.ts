@@ -1,4 +1,4 @@
-import { registerTerrainosaurusComponent } from "./classes/registerTerrainosaurusComponent";
+import { registerTerrainosaurusComponent } from "./classes/terrainosaurus-terrain";
 
 const workerUrl = new URL("./classes/vertex-worker", import.meta.url)
 workerUrl.searchParams.append("isFile", "true")
