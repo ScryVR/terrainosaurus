@@ -4,9 +4,22 @@
     <title>Terrainosaurus Demo</title>
     <link rel="icon" type="image/x-icon" href="./assets/images/icon.svg">
     <script src="./assets/scripts/bundle.js"></script>
+    <script src="https://mwbeene.github.io/aframe-cursor-teleport/dist/aframe-cursor-teleport-component.min.js"></script>
+    <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
+    <script>
+      AFRAME.registerComponent("click-test", {
+        init() {
+          console.log("initializing the click test component")
+          this.el.addEventListener("click", (event) => {
+            console.log("clicky clicky", event)
+          })
+        }
+      })
+    </script>
   </head>
   <body>
-    <a-scene fog="type: exponential; color: #AAA; density: 0.02;" renderer="maxCanvasWidth: 720; maxCanvasHeight: 600; antialiasing: false; physicallyCorrectLights: true;">
+    <a-scene fog="type: exponential; color: #AAA; density: 0.02;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: true; physicallyCorrectLights: true;">
       <a-assets>
         <img id="displacementMap" src="./assets/images/displacement.jpg" crossorigin="anonymous" />
         <img id="grassTexture" src="./assets/images/rock.jpg" crossorigin="anonymous" />
@@ -21,19 +34,38 @@
       </a-entity>
       <a-entity
         id="terrain"
-        position="0 -30 -30"
-        scale="10 10 10"
+        position="0 6 -10"
+        scale="6 6 6"
         material="shader: standard; side: double; wireframe: false; roughness: 1; src: #grassTexture; repeat: 1 1;"
         terrainosaurus-terrain
+        click-test
         >
       </a-entity>
+      <a-entity
+        id="cameraRig"
+        cursor-teleport="
+          cameraRig: #cameraRig;
+          cameraHead: #head;
+          collisionEntities: .terrainosaurus-chunk;
+          ignoreEntities: .clickable"
+        position="0 20 0"
+        movement-controls="controls: keyboard; constrainToNavMesh: true"
+      >
+        <a-entity camera
+          id="head"
+          position="0 1.2 0"
+          look-controls="pointerLockEnabled: false"
+        >
+        </a-entity>
+        <a-entity cursor="fuse: false; rayOrigin: mouse"
+          position="0 1.2 -2"
+          raycaster="objects: .terrainosaurus-chunk;"
+          teleport-controls="
+            cameraRig: #cameraRig;
+            teleportOrigin: #head;
+            cuveShootingSpeed: 8;">
+      </a-entity>
       <a-sphere position="0 10 -10"></a-sphere>
-      <!-- <a-entity
-        id="example"
-        material="color: cyan; shader: standard; side: double; displacementMap: #displacementMap; displacementScale: 0.04;"
-        geometry="primitive: plane; segmentsDepth: 400; segmentsWidth: 40; segmentsHeight: 40;"
-        position="0 2 -2">
-      </a-entity> -->
       <a-sky color="#aae" material="fog: false;"></a-sky>
     </a-scene>
   </body>

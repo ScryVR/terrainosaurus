@@ -15,7 +15,7 @@ module.exports = {
   // Webpack needs to know where to start the bundling process,
   // so we define the main JS and Sass files, both under
   // the './src' directory
-  entry: ['./src/scripts/main.ts', './src/styles/main.scss'], // MODIFICATION: Use main.ts instead of main.js
+  entry: ['./src/scripts/main.ts', './src/styles/main.scss', './src/scripts/classes/vertex-worker.ts'], // MODIFICATION: Use main.ts instead of main.js
   // This is where we define the path where Webpack will place
   // the bundled JS file
   output: {
@@ -35,16 +35,23 @@ module.exports = {
       { // MODIFICATION: This rule lets us build .ts files
         test: /\.ts$/,
         use: 'ts-loader',
-        exclude: /node_modules\/(?!scry-webrtc-client)/,
+        exclude: /node_modules/,
       },
       {
         // Look for JavaScript files and apply the babel-loader
         // excluding the './node_modules' directory. It uses the
         // configuration in `.babelrc`
         test: /\.(js)$/,
-        // exclude: /node_modules/,
-      exclude: /node_modules\/(?!scry-webrtc-client)/,
+        exclude: /node_modules/,
         use: ['babel-loader']
+      },
+      {
+        test: /vertex-worker/,
+        generator: {
+          publicPath: "assets/scripts/",
+          outputPath: "assets/scripts",
+          filename: "vertex-worker.js"
+        }
       },
       {
         // Look for Sass files and process them according to the

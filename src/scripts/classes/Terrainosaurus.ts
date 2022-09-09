@@ -1,34 +1,17 @@
 import { BufferGeometry, Float32BufferAttribute } from "three";
 import { defaultGenerators, defaultGeneratorSelector } from "./generators";
+import {
+  IVertex,
+  ITerrainosaurusProps,
+  ISection,
+  IGetSquareProps,
+} from "./interfaces";
 
 const VERTICES_PER_SQUARE = 6; // This will change to 4 if/when we do some memory optimizations
 
-export interface ITerrainosaurusProps {
-  size: number;
-  lowDetailRecursions: number;
-  highDetailRecursions: number;
-  seed: any;
-  generators?: Array<(...args: any) => any>;
-  generatorSelector?: (...args: any) => number;
-}
-
-export interface ISection {
-  vertices: Array<IVertex>;
-  absoluteIndex: number;
-}
-
-export interface IVertex {
-  pos: Array<number>;
-  norm: Array<number>;
-  uv: Array<number>;
-  color?: Array<number>;
-  recursions: number;
-}
-
-interface IGetSquareProps {
-  vertices: Array<IVertex>;
-  recursions: number;
-}
+addEventListener("message", ({ data }) => {
+  console.log("web worker????", data)
+})
 
 export class Terrainosaurus {
   size: number;
@@ -37,10 +20,14 @@ export class Terrainosaurus {
   highDetailRecursions: number;
   vertices: Array<IVertex>;
   indices: Array<number>;
+  state: any;
   generators: Array<(args: any) => any>;
-  generatorSelector: (args: any) => number;
+  generatorSelector: (...args: any) => number;
+  vertexWorker?: Worker;
+
   constructor(props: ITerrainosaurusProps) {
     this.vertices = [];
+    this.state = props.state || {};
     this.indices = [];
     this.size = props.size;
     this.offset = props.size / 2;
@@ -49,6 +36,7 @@ export class Terrainosaurus {
     this.generators = props.generators || defaultGenerators;
     this.setInitialVertices(this.offset);
   }
+
   setInitialVertices(offset: number) {
     // Initialize such that we can use diamond-square displacement
     // TODO: Remove the duplicate vertices and update the indices instead
@@ -81,6 +69,34 @@ export class Terrainosaurus {
       }
     }
   }
+  async recurseSectionInBackground(section: ISection, levels: number = 1) {
+    if (typeof Worker === undefined) {
+      throw new Error(
+        "Unable to initialize Web Workers in the current context"
+      );
+    }
+    return new Promise((resolve) => {
+      const workerUrl = new URL("vertex-worker", import.meta.url)
+      workerUrl.searchParams.append("isFile", "true")
+      const vertexWorker = new Worker(workerUrl, { type: "module" });
+      const spliceParams = {
+        start: section.absoluteIndex,
+        end: section.vertices.length
+      }
+      vertexWorker.onmessage = (event) => {
+        this.vertices.splice(spliceParams.start, spliceParams.end, ...event.data.vertices)
+        resolve(event.data.geometry);
+      };
+      console.log("going to post a message")
+      vertexWorker.postMessage({
+        action: "recurseSection",
+        section: { vertices: section.vertices, absoluteIndex: 0 },
+        generatorSelector: this.generatorSelector.toString(),
+        generators: this.generators.map(gen => gen.toString()),
+        levels,
+      });
+    });
+  }
   recursivelyGenerate(vertexIndex: number) {
     /**
      * Replaces a given square with 4 smaller squares.
@@ -106,6 +122,7 @@ export class Terrainosaurus {
     let replacementVertices = this.getSubSquares({
       vertices: verticesToReplace,
       recursions,
+      vertexIndex
     });
 
     this.vertices.splice(
@@ -116,21 +133,22 @@ export class Terrainosaurus {
   }
   getSection(path: Array<1 | 2 | 3 | 4>, section?: ISection): ISection {
     section = section || { vertices: this.vertices, absoluteIndex: 0 };
-    return path.reduce((acc, quadrant: number, level) => {
+    return path.reduce((acc, quadrant: number, index) => {
+      let level = index + 1;
       const q1Index = 0; // Top left
       const q2Index =
-        Math.pow(acc.vertices[0].recursions - level, 2) * VERTICES_PER_SQUARE; // Top right
+        Math.pow(4, acc.vertices[0].recursions - level) * VERTICES_PER_SQUARE; // Top right
       const q3Index =
         q2Index +
-        Math.pow(acc.vertices[q2Index].recursions - level, 2) *
+        Math.pow(4, acc.vertices[q2Index].recursions - level) *
           VERTICES_PER_SQUARE; // Bottom left
       const q4Index =
         q3Index +
-        Math.pow(acc.vertices[q3Index].recursions - level, 2) *
+        Math.pow(4, acc.vertices[q3Index].recursions - level) *
           VERTICES_PER_SQUARE; // Bottom left
       const endIndex =
         q4Index +
-        Math.pow(acc.vertices[q3Index].recursions - level, 2) *
+        Math.pow(4, acc.vertices[q3Index].recursions - level) *
           VERTICES_PER_SQUARE; // End of quadrant
       const quadrantIndices: Array<number> = [
         q1Index,
@@ -165,7 +183,7 @@ export class Terrainosaurus {
 
     const generator =
       this.generators[
-        this.generatorSelector({ topLeft, topRight, bottomLeft, bottomRight })
+        this.generatorSelector.call(this, { topLeft, topRight, bottomLeft, bottomRight, center, vertexIndex: props.vertexIndex })
       ];
     center = generator.call(this, center, {
       topLeft,
@@ -296,18 +314,21 @@ export class Terrainosaurus {
     const positionNumComponents = 3;
     const normalNumComponents = 3;
     const uvNumComponents = 2;
+    const colorNumComponents = 3;
     // Get vertex data in nice parallel arrays
-    const { positions, normals, uvs } = section.reduce(
+    const { positions, normals, uvs, colors } = section.reduce(
       (acc: any, vertex) => {
         acc.positions = acc.positions.concat(vertex.pos);
         acc.normals = acc.normals.concat(vertex.norm);
         acc.uvs = acc.uvs.concat(vertex.uv);
-        if (vertex.color) {
-          acc.color = acc.color.concat(vertex.color);
-        }
+        // if (vertex.color) {
+        //   acc.colors = acc.colors.concat(255, 0, 0);
+        // } else {
+        //   acc.colors = acc.colors.concat(0, 255, 255)
+        // }
         return acc;
       },
-      { positions: [], normals: [], uvs: [], color: [] }
+      { positions: [], normals: [], uvs: [], colors: [] }
     );
     // Use parallel arrays to create BufferGeometry
     geometry.setAttribute(
@@ -325,6 +346,10 @@ export class Terrainosaurus {
       "uv",
       new Float32BufferAttribute(new Float32Array(uvs), uvNumComponents)
     );
+    geometry.setAttribute(
+      "color",
+      new Float32BufferAttribute(new Float32Array(colors), colorNumComponents)
+    )
     // geometry.setIndex(this.indices);
     return geometry;
   }
@@ -371,10 +396,5 @@ const vertexGenerator = function* (recursions: number) {
     yield { norm: [0, 1, 0], uv: [0, 0], recursions };
     yield { norm: [0, 1, 0], uv: [1, 1], recursions };
     yield { norm: [0, 1, 0], uv: [1, 0], recursions };
-
-    // while(1) {
-    //   yield { norm: [0, 1, 0], uv: [0, 0], recursions };
-    // }
-
   }
 };
