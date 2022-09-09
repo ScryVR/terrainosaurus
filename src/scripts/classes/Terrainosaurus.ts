@@ -9,10 +9,6 @@ import {
 
 const VERTICES_PER_SQUARE = 6; // This will change to 4 if/when we do some memory optimizations
 
-addEventListener("message", ({ data }) => {
-  console.log("web worker????", data)
-})
-
 export class Terrainosaurus {
   size: number;
   offset: number;
@@ -24,6 +20,7 @@ export class Terrainosaurus {
   generators: Array<(args: any) => any>;
   generatorSelector: (...args: any) => number;
   vertexWorker?: Worker;
+  vertexWorkerUrl?: string | URL;
 
   constructor(props: ITerrainosaurusProps) {
     this.vertices = [];
@@ -34,6 +31,7 @@ export class Terrainosaurus {
     this.generatorSelector =
       props.generatorSelector || defaultGeneratorSelector;
     this.generators = props.generators || defaultGenerators;
+    this.vertexWorkerUrl = props.vertexWorkerUrl
     this.setInitialVertices(this.offset);
   }
 
@@ -75,10 +73,11 @@ export class Terrainosaurus {
         "Unable to initialize Web Workers in the current context"
       );
     }
-    return new Promise((resolve) => {
-      const workerUrl = new URL("vertex-worker", import.meta.url)
-      workerUrl.searchParams.append("isFile", "true")
-      const vertexWorker = new Worker(workerUrl, { type: "module" });
+    return new Promise((resolve, reject) => {
+      if (!this.vertexWorkerUrl) {
+        reject("Cannot recurse in background - vertexWorkerUrl not provided in constructor")
+      }
+      const vertexWorker = new Worker(this.vertexWorkerUrl, { type: "module" });
       const spliceParams = {
         start: section.absoluteIndex,
         end: section.vertices.length

@@ -8,26 +8,29 @@ import { SimplexNoise } from 'simplex-noise-esm'
 
 const simplex = new SimplexNoise()
 
+const workerUrl = new URL("./classes/vertex-worker", import.meta.url)
+workerUrl.searchParams.append("isFile", "true")
 const terrainClient = new Terrainosaurus({
   size: 20,
   seed: 0,
   state: {
     simplex
   },
+  vertexWorkerUrl: workerUrl,
   lowDetailRecursions: 0,
   highDetailRecursions: 0,
-  generators: [
-    function (center: IPoint, corners: ICorners) {
-      // @ts-ignore
-      const displacementCoeff = (corners.topRight.pos[0] - corners.bottomLeft.pos[0]) / 2.5
-      const yDisplacement = this.state.simplex.noise2D(center.x, center.z) * displacementCoeff
-      return {
-        x: center.x,
-        y: center.y + yDisplacement,
-        z: center.z
-      }
-    }
-  ]
+  // generators: [
+  //   function (center: IPoint, corners: ICorners) {
+  //     // @ts-ignore
+  //     const displacementCoeff = (corners.topRight.pos[0] - corners.bottomLeft.pos[0]) / 2.5
+  //     const yDisplacement = this.state.simplex.noise2D(center.x, center.z) * displacementCoeff
+  //     return {
+  //       x: center.x,
+  //       y: center.y + yDisplacement,
+  //       z: center.z
+  //     }
+  //   }
+  // ]
 });
 
 function createGeometryComponent(path: Array<1 | 2 | 3 | 4>) {
@@ -68,16 +71,12 @@ registerComponent("terrainosaurus-terrain", {
       this.updateChunkGeometries()
       terrainClient.recurseSectionInBackground({ vertices: terrainClient.vertices, absoluteIndex: 0 }, 1)
       .then(() => {
-        // console.log("time for a mini recursion")
         this.updateChunkGeometries()
-        // const { absoluteIndex, vertices } = terrainClient.getSection([1, 1, 1])
-        // console.log({ absoluteIndex, vertices: vertices.length }, terrainClient.vertices.length)
-        // terrainClient.recurseSectionInBackground({ vertices, absoluteIndex })
-        // .then((event) => {
-        //   console.log("oh wow", event)
-        //   console.log(terrainClient.getSection([1, 1]))
-        //   this.updateChunkGeometries()
-        // })
+        terrainClient.recurseSectionInBackground(terrainClient.getSection([1]))
+        .then(() => {
+          console.log(terrainClient.getSection([1, 1]))
+          this.updateChunkGeometries()
+        })
       })
     })
 

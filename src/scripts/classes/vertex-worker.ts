@@ -12,7 +12,7 @@ import { SimplexNoise } from "https://unpkg.com/simplex-noise-esm@2.5.0-esm.0/di
 // @ts-ignore
 const { BufferGeometry, Float32BufferAttribute } = THREE
 
-const simplex = new SimplexNoise("seed")
+const simplex = new SimplexNoise()
 
 const VERTICES_PER_SQUARE = 6;
 

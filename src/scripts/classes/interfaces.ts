@@ -7,6 +7,7 @@ export interface ITerrainosaurusProps {
   state: any;
   generators?: Array<(...args: any) => any>;
   generatorSelector?: (...args: any) => number;
+  vertexWorkerUrl?: string | URL;
 }
 
 export interface ISection {
