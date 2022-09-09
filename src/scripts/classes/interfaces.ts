@@ -1,13 +1,13 @@
-
-export interface ITerrainosaurusProps {
-  size: number;
-  lowDetailRecursions: number;
-  highDetailRecursions: number;
-  seed: any;
-  state: any;
+export interface IRegisterProps {
   generators?: Array<(...args: any) => any>;
   generatorSelector?: (...args: any) => number;
   vertexWorkerUrl?: string | URL;
+}
+
+export interface ITerrainosaurusProps extends IRegisterProps {
+  size: number;
+  seed: any;
+  state?: any;
 }
 
 export interface ISection {

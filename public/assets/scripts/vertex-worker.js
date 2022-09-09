@@ -9,7 +9,7 @@ import "https://unpkg.com/three@0.144.0/build/three.min.js";
 import { SimplexNoise } from "https://unpkg.com/simplex-noise-esm@2.5.0-esm.0/dist-esm/simplex-noise.js";
 // @ts-ignore
 const { BufferGeometry, Float32BufferAttribute } = THREE;
-const simplex = new SimplexNoise("seed");
+const simplex = new SimplexNoise();
 const VERTICES_PER_SQUARE = 6;
 addEventListener("message", ({ data }) => {
     if (data.action === "recurseSection") {
