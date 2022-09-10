@@ -7,14 +7,18 @@
  *
  */
 
-import { registerComponent, registerGeometry } from "aframe";
+import { AFrame } from "aframe";
 import { Raycaster, Vector3 } from "three";
 import { IRegisterProps, ITerrainosaurusProps } from "./interfaces";
 import { Terrainosaurus } from "./Terrainosaurus";
 
 const _terrainosaurusMap: Record<string, Terrainosaurus> = {};
 
-export function registerTerrainosaurusComponent(props: IRegisterProps) {
+export function registerTerrainosaurusComponent(
+  props: IRegisterProps,
+  aframe: AFrame
+) {
+  const { registerComponent, registerGeometry } = aframe;
   registerComponent("terrainosaurus-terrain", {
     schema: {
       size: { type: "int", default: 20 },
@@ -41,7 +45,7 @@ export function registerTerrainosaurusComponent(props: IRegisterProps) {
       this.chunks = [];
       for (let i = 0; i < 16; i++) {
         this.chunks.push(document.createElement("a-entity"));
-        const chunkGeometry = createGeometryComponent(
+        const chunkGeometry = this.createGeometryComponent(
           terrainClient,
           getQuadrantPath(i)
         );
@@ -120,11 +124,31 @@ export function registerTerrainosaurusComponent(props: IRegisterProps) {
     updateChunkGeometries() {
       // Should be called after new vertices are calculated.
       // Creates new geometries and assigns them to the chunks.
-      const terrainClient = _terrainosaurusMap[this.terrainosaurusId]
+      const terrainClient = _terrainosaurusMap[this.terrainosaurusId];
       for (let i = 0; i < 16; i++) {
-        const chunkGeometry = createGeometryComponent(terrainClient, getQuadrantPath(i));
+        const chunkGeometry = this.createGeometryComponent(
+          terrainClient,
+          getQuadrantPath(i)
+        );
         this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
       }
+    },
+    createGeometryComponent(
+      terrainClient: Terrainosaurus,
+      path: Array<1 | 2 | 3 | 4>
+    ) {
+      const name = `terrainosaurus-${Math.floor(Math.random() * 100000)}`;
+      registerGeometry(name, {
+        init() {
+          const geometry = terrainClient.createGeometry(
+            terrainClient.getSection(path).vertices
+          );
+          geometry.computeBoundingSphere();
+          geometry.computeVertexNormals();
+          this.geometry = geometry;
+        },
+      });
+      return name;
     },
     handleIntersection() {
       if (this.intersections.length) {
@@ -162,27 +186,6 @@ function addTerrainosaurusObjectToMap(props: ITerrainosaurusProps) {
 // Using Math.random() should be fine since this isn't a cryptographically-sensitive use case.
 function getRandomId() {
   return Math.floor(1 + Math.random() * 10000000).toString();
-}
-
-function createGeometryComponent(
-  terrainClient: Terrainosaurus,
-  path: Array<1 | 2 | 3 | 4>
-) {
-  const name = `terrainosaurus-${Math.floor(Math.random() * 100000)}`;
-  registerGeometry(name, {
-    init() {
-      // if (path[0] === 2 && path[1] === 2) {
-      //   console.log("aefof", terrainClient.getSection(path))
-      // }
-      const geometry = terrainClient.createGeometry(
-        terrainClient.getSection(path).vertices
-      );
-      geometry.computeBoundingSphere();
-      geometry.computeVertexNormals();
-      this.geometry = geometry;
-    },
-  });
-  return name;
 }
 
 // There should be a way to reduce this to a single expression, but I can't be bothered right now.

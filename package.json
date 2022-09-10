@@ -1,6 +1,6 @@
 {
   "name": "terrainosaurus",
-  "version": "0.0.10",
+  "version": "0.0.13",
   "main": "dist/index.js",
   "license": "MIT",
   "devDependencies": {
@@ -31,7 +31,7 @@
     "dev": "npm-run-all -p dev:*",
     "build": "cross-env NODE_ENV=production webpack",
     "deploy": "aws --profile personal --recursive s3 cp --acl=public-read ./public s3://bernardo.lol/terrainosaurus",
-    "prepublishOnly": "tsc --outDir .build; mv .build/src/scripts/classes/Terrainosaurus.js ./dist/index.js; mv .build/src/scripts/classes/generators.js ./dist/generators.js; mv .build/src/scripts/classes/vertex-worker.js ./dist/vertex-worker.js; mv .build/src/scripts/classes/terrainosaurus-terrain.js ./dist/terrainosaurus-terrain.js; rm -rf .build;"
+    "prepublishOnly": "tsc --outDir .build; mv .build/src/scripts/classes/Terrainosaurus.js ./dist/Terrainosaurus.js; mv .build/src/scripts/classes/generators.js ./dist/generators.js; mv .build/src/scripts/classes/vertex-worker.js ./dist/vertex-worker.js; mv .build/src/scripts/classes/terrainosaurus-terrain.js ./dist/index.js; rm -rf .build;"
   },
   "peerDependencies": {
     "aframe": "^1.3.0",
