@@ -4,11 +4,7 @@
 
 This repository provides an [a-frame](https://aframe.io/docs/1.3.0/introduction/) component called `terrainosaurus-terrain`. This component is intended to be used as a ground surface in VR applications. It provides some default terrain generators, but custom generators can be provided. The terrain generator uses Web Workers to significantly improve performance.
 
-<details>
-  <summary>Click here to see some examples</summary>
-![Terrainosaurus example output](/public/assets/images/sample_terrain.jpeg)
-![Terrainosaurus more example output](/public/assets/images/sample_terrain_2.jpeg)
-</details>
+[Click here to see some examples](#examples)
 
 
 ## Installation and usage
@@ -144,3 +140,8 @@ npm publish
 # or
 yarn publish
 ```
+
+## (#Examples)
+
+![Terrainosaurus example output](/public/assets/images/sample_terrain.jpeg)
+![Terrainosaurus more example output](/public/assets/images/sample_terrain_2.jpeg)
