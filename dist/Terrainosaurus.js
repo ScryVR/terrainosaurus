@@ -1,8 +1,11 @@
 import { BufferGeometry, Float32BufferAttribute } from "three";
 import { defaultGenerators, defaultGeneratorSelector } from "./generators";
+// @ts-ignore
+import { SimplexNoise } from 'simplex-noise-esm';
 const VERTICES_PER_SQUARE = 6; // This will change to 4 if/when we do some memory optimizations
 export class Terrainosaurus {
     size;
+    seed;
     offset;
     lowDetailRecursions;
     highDetailRecursions;
@@ -23,6 +26,8 @@ export class Terrainosaurus {
             props.generatorSelector || defaultGeneratorSelector;
         this.generators = props.generators || defaultGenerators;
         this.vertexWorkerUrl = props.vertexWorkerUrl;
+        this.seed = (props.seed || Math.random()).toString();
+        this.state.simplex = new SimplexNoise(this.seed);
         this.setInitialVertices(this.offset);
     }
     setInitialVertices(offset) {
@@ -76,6 +81,7 @@ export class Terrainosaurus {
             console.log("going to post a message");
             vertexWorker.postMessage({
                 action: "recurseSection",
+                seed: this.seed,
                 section: { vertices: section.vertices, absoluteIndex: 0 },
                 generatorSelector: this.generatorSelector.toString(),
                 generators: this.generators.map(gen => gen.toString()),
@@ -152,7 +158,7 @@ export class Terrainosaurus {
             topRight,
             bottomLeft,
             bottomRight,
-        });
+        }, this.state.simplex.noise2D(center.x, center.y));
         const baseVertex = vertexGenerator(recursions);
         const newVertices = [
             // Top left square

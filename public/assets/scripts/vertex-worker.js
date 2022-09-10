@@ -7,18 +7,20 @@
 import "https://unpkg.com/three@0.144.0/build/three.min.js";
 // @ts-ignore
 import { SimplexNoise } from "https://unpkg.com/simplex-noise-esm@2.5.0-esm.0/dist-esm/simplex-noise.js";
+let simplex = null;
 // @ts-ignore
 const { BufferGeometry, Float32BufferAttribute } = THREE;
-const simplex = new SimplexNoise();
 const VERTICES_PER_SQUARE = 6;
 addEventListener("message", ({ data }) => {
     if (data.action === "recurseSection") {
         const context = {
-            state: { simplex },
             vertices: data.section.vertices,
             generators: data.generators.map((f) => reconstructFunction(f)),
             generatorSelector: reconstructFunction(data.generatorSelector),
         };
+        if (!simplex) {
+            simplex = new SimplexNoise(data.seed || Math.random().toString());
+        }
         const levels = data.levels || 1;
         recurseSection.call(context, data.section, levels);
         postMessage({
@@ -28,7 +30,6 @@ addEventListener("message", ({ data }) => {
     }
 });
 function reconstructFunction(functionString) {
-    // console.log("Before reconstruction", functionString)
     functionString = functionString.replace(/\S*__WEBPACK_IMPORTED_MODULE_\d+__./g, "");
     // console.log("After reconstruction", functionString)
     let functionCode = functionString.split("\n");
@@ -115,7 +116,7 @@ function getSubSquares(props) {
         topRight,
         bottomLeft,
         bottomRight,
-    });
+    }, simplex.noise2D(center.x, center.z));
     const baseVertex = vertexGenerator(recursions);
     const newVertices = [
         // Top left square

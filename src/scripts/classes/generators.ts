@@ -1,5 +1,7 @@
 import { Vector3} from 'three'
 import { IVertex } from "./interfaces";
+// @ts-ignore
+import { SimplexNoise } from 'simplex-noise-esm'
 
 export function defaultGeneratorSelector() {
   return Math.floor(Math.random() * this.generators.length)
@@ -19,11 +21,11 @@ export interface ICorners {
 }
 
 export const defaultGenerators: Array<(...args: any) => any> = [
-  (center: IPoint, corners: ICorners) => {
-    const maxDisplacement = (corners.topRight.pos[0] - corners.topLeft.pos[0]) / 1.4
+  (center: IPoint, corners: ICorners, randomNumber: number) => {
+    const maxDisplacement = (corners.topRight.pos[0] - corners.topLeft.pos[0]) / 2
     return {
       x: center.x,
-      y: center.y + Math.random() * maxDisplacement - maxDisplacement / 2,
+      y: center.y + randomNumber * maxDisplacement,
       z: center.z
     }
   }
