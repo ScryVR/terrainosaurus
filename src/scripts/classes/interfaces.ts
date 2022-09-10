@@ -2,12 +2,12 @@ export interface IRegisterProps {
   generators?: Array<(...args: any) => any>;
   generatorSelector?: (...args: any) => number;
   vertexWorkerUrl?: string | URL;
+  state?: any;
 }
 
 export interface ITerrainosaurusProps extends IRegisterProps {
   size: number;
   seed: any;
-  state?: any;
 }
 
 export interface ISection {

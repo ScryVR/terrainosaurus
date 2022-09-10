@@ -21,6 +21,7 @@ export function registerTerrainosaurusComponent(
   const { registerComponent, registerGeometry } = aframe;
   registerComponent("terrainosaurus-terrain", {
     schema: {
+      seed: { type: "int", default: 1 },
       size: { type: "int", default: 20 },
       destroyClientOnRemoval: { type: "boolean", default: false },
       src: { type: "string" },
@@ -32,7 +33,7 @@ export function registerTerrainosaurusComponent(
       const terrainosarusProps = {
         ...props,
         size: this.data.size,
-        seed: 0,
+        seed: this.data.seed,
       };
       this.terrainosaurusId = addTerrainosaurusObjectToMap(terrainosarusProps);
 
