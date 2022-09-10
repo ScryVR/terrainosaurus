@@ -1,17 +1,15 @@
 # Terrainosaurus
 
-**NOTE**: This is aspirational documentation. Not all functionalities and behaviors described here are actually implemented.
-
 ## Overview
 
-**NOTE**: The current alpha state only implements a simple diamond-square displacement out of the box, so the terrain is simple, not complex.
+This repository provides an [a-frame](https://aframe.io/docs/1.3.0/introduction/) component called `terrainosaurus-terrain`. This component is intended to be used as a ground surface in VR applications. It provides some default terrain generators, but custom generators can be provided. The terrain generator uses Web Workers to significantly improve performance.
 
-This repository provides a class that registers a custom THREE.js geometry. This geometry represents a complex terrain.
-In order to achieve this, Fractal Terrain Generation and Wave Function Collapse Terrain Generation techniques are used.
-This novel combination enables a measure of control not usually found with fractal terrain.
+<details>
+  <summary>Click here to see some examples</summary>
+![Terrainosaurus example output](/public/assets/images/sample_terrain.jpeg)
+![Terrainosaurus more example output](/public/assets/images/sample_terrain_2.jpeg)
+</details>
 
-This repositoty also includes a function called `registerTerrainosaurusComponent` which registers an a-frame component that uses Terrainosaurus.
-See later sections for more information on this `terrainosaurus-terrain` component.
 
 ## Installation and usage
 
@@ -87,6 +85,46 @@ The component created by `registerTerrainosaurusComponent` does a few things wor
 instead of creating one large geometry object it creates 16 smaller ones and adds them as children. **NOTE**: This is relevant when raycasting. Instead of trying to collide with `[terrainosaurus-terrain]`, it may make more sense to collide with `.terrainosaurus-chunk`.
 * *It moves up and down so the player is always touching the ground*
 The component does some raycasting to find the distance between the camera position and the ground underneath it. The terrain adjusts its position accordingly. By default, the terrain moves itself rather than the camera in order to not conflict with other movement controls that might be in use. This approach also makes AR mode work much more simply.
+
+## Custom terrain generators
+
+Terrainosaurus provides a good level of convenience and performance for rendering terrain, but the terrain itself is generated according to a simple diamond-square displacement. This method can be overriden by passing functions to `registerTerrainosaurusComponent`, but these functions need to comply with specific properties. **NOTE**: I do not currently recommend this feature for general usage. The developer experience is pretty abysmal unless you're prepared to debug the source code. It might be preferable to test alternative generation algorithms by forking the repo.
+
+```javascript
+// How to pass generators
+import { registerTerrainosaurusComponent } from 'terrainosaurus'
+import { VERTEX_WORKER_URL } from './constants' // See other sections for details about this
+registerTerrainosaurusComponent({
+  vertexWorkerUrl: VERTEX_WORKER_URL,
+  generators: [
+    // Does a simple diamond-square displacement
+    function (center, corners) {
+      const maxDisplacement = (corners.topRight.pos[0] - corners.bottomLeft.pos[0]) / 2
+      return {
+        x: center.x,
+        y: center.y + Math.random() * maxDisplacement - maxDisplacement / 2,
+        z: center.z
+      }
+    },
+    // No displacement at all
+    function (center, corners) {
+      return center
+    }
+  ],
+  // Determines which generator gets chosen at any given step
+  generatorSelector() {
+    if (x > 10 && z > 10) {
+      return 1
+    }
+    return 0
+  }
+}, AFRAME)
+```
+
+The `generator` and `generatorSelector` functions must adhere to some strict guidelines since they have to run in the Web Worker context.
+
+* The functions must be declared inline and cannot be anonymous.
+* The functions cannot have any dependencies beyond standard libraries (e.g., `Math`) and `THREE`.
 
 ## Development and publishing
 
