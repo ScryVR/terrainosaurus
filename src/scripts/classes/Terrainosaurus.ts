@@ -195,7 +195,7 @@ export class Terrainosaurus {
       topRight,
       bottomLeft,
       bottomRight,
-    }, this.state.simplex.noise2D(center.x, center.y));
+    }, this.state.simplex.noise2D(center.x + 10, center.z + 10)); // Offset since simplex noise is always 0 at 0, 0
 
     const baseVertex = vertexGenerator(recursions);
     const newVertices: any = [

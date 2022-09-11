@@ -1,8 +1,7 @@
 // TODO: Figure out how to do proper module imports in a web worker. This works for now, but it's messy
-// // @ts-ignore
-// import { BufferGeometry, Float32BufferAttribute } from "https://unpkg.com/three@0.144.0/build/three.min.js";
-// // @ts-ignore
-// import { SimplexNoise } from "https://unpkg.com/simplex-noise-esm@2.5.0-esm.0/dist-esm/simplex-noise.js";
+// import "three";
+// @ts-ignore
+// import { SimplexNoise } from "simplex-noise-esm";
 
 // @ts-ignore
 import "https://unpkg.com/three@0.144.0/build/three.min.js";
@@ -16,7 +15,10 @@ const { BufferGeometry, Float32BufferAttribute } = THREE
 
 const VERTICES_PER_SQUARE = 6;
 
-addEventListener("message", ({ data }) => {
+console.log("seems like the import works")
+
+self.addEventListener("message", ({ data }) => {
+  console.log("yeah, no way")
   if (data.action === "recurseSection") {
     const context = {
       vertices: data.section.vertices,
@@ -163,7 +165,7 @@ function getSubSquares(props: any) {
     topRight,
     bottomLeft,
     bottomRight,
-  }, simplex.noise2D(center.x, center.z));
+  }, simplex.noise2D(center.x + 10, center.z + 10)); // Offset since simplex noise is always 0 at 0, 0
 
   const baseVertex = vertexGenerator(recursions);
   const newVertices = [
