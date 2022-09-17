@@ -280,11 +280,15 @@ export class Terrainosaurus {
             acc.positions = acc.positions.concat(vertex.pos);
             acc.normals = acc.normals.concat(vertex.norm);
             acc.uvs = acc.uvs.concat(vertex.uv);
-            // if (vertex.color) {
-            //   acc.colors = acc.colors.concat(255, 0, 0);
-            // } else {
-            //   acc.colors = acc.colors.concat(0, 255, 255)
-            // }
+            if (vertex.pos[1] > 3) {
+                acc.colors = acc.colors.concat(0.6, 0.6, 0.6);
+            }
+            else if (vertex.pos[1] < 1.2) {
+                acc.colors = acc.colors.concat(0.8, 0.7, 0.5);
+            }
+            else {
+                acc.colors = acc.colors.concat(0.5, 0.9, 0.5);
+            }
             return acc;
         }, { positions: [], normals: [], uvs: [], colors: [] });
         // Use parallel arrays to create BufferGeometry

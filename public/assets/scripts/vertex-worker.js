@@ -25,8 +25,7 @@ self.addEventListener("message", ({ data }) => {
         const levels = data.levels || 1;
         recurseSection.call(context, data.section, levels);
         postMessage({
-            vertices: context.vertices,
-            geometry: createGeometry(context.vertices),
+            vertices: context.vertices
         });
     }
 });
@@ -71,30 +70,6 @@ function recursivelyGenerate(vertexIndex) {
         vertexIndex,
     });
     this.vertices.splice(vertexIndex, VERTICES_PER_SQUARE, ...replacementVertices);
-}
-function createGeometry(section = this.vertices) {
-    // When called, generates a BufferGeometry out of the current vertices
-    const geometry = new BufferGeometry();
-    const positionNumComponents = 3;
-    const normalNumComponents = 3;
-    const uvNumComponents = 2;
-    const colorNumComponents = 3;
-    // Get vertex data in nice parallel arrays
-    const { positions, normals, uvs, colors } = section.reduce((acc, vertex) => {
-        acc.positions = acc.positions.concat(vertex.pos);
-        acc.normals = acc.normals.concat(vertex.norm);
-        acc.uvs = acc.uvs.concat(vertex.uv);
-        return acc;
-    }, { positions: [], normals: [], uvs: [], colors: [] });
-    // Use parallel arrays to create BufferGeometry
-    geometry.setAttribute("position", new Float32BufferAttribute(new Float32Array(positions), positionNumComponents));
-    geometry.setAttribute("normal", new Float32BufferAttribute(new Float32Array(normals), normalNumComponents));
-    geometry.setAttribute("uv", new Float32BufferAttribute(new Float32Array(uvs), uvNumComponents));
-    geometry.setAttribute("color", new Float32BufferAttribute(new Float32Array(colors), colorNumComponents));
-    // geometry.setIndex(this.indices);
-    geometry.computeBoundingSphere();
-    geometry.computeVertexNormals();
-    return geometry;
 }
 function getSubSquares(props) {
     const { recursions } = props;

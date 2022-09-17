@@ -54,16 +54,16 @@ export function registerTerrainosaurusComponent(
         this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
         this.chunks[i].setAttribute("material", {
           side: "double",
-          vertexColors: "none",
+          vertexColors: "vertex",
           shader: "standard",
           roughness: 1,
         });
         // This logic might get more complicated later as we support proper texturing
-        if (this.data.src) {
-          this.chunks[i].setAttribute("material", {
-            src: this.data.src,
-          });
-        }
+        // if (this.data.src) {
+        //   this.chunks[i].setAttribute("material", {
+        //     src: this.data.src,
+        //   });
+        // }
         this.el.appendChild(this.chunks[i]);
       }
       terrainClient
@@ -116,7 +116,7 @@ export function registerTerrainosaurusComponent(
       this.cameraWorldPosition.y += 1;
       this.raycaster.set(this.cameraWorldPosition, this.DOWN_VECTOR);
       this.raycaster.intersectObject(
-        this.el.object3D,
+        this.displacementTarget.object3D,
         true,
         this.intersections
       );

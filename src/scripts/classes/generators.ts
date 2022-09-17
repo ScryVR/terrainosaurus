@@ -20,9 +20,11 @@ export interface ICorners {
 
 export const defaultGenerators: Array<(...args: any) => any> = [
   (center: IPoint, corners: ICorners, randomNumber: number) => {
-    const displacementFactor = (corners.topRight.recursions + 1) / 1.5
-    const maxDisplacement = Math.pow(corners.topRight.pos[0] - corners.topLeft.pos[0], 0.707) / displacementFactor
+    const JAGGEDNESS = 1.3;
+    const displacementFactor = (corners.topRight.recursions + 1) / JAGGEDNESS
+    const maxDisplacement = Math.pow((corners.topRight.pos[0] - corners.topLeft.pos[0]), 0.6) / displacementFactor
     const displacement = randomNumber * maxDisplacement
+    
     return {
       x: center.x,
       y: center.y + displacement,

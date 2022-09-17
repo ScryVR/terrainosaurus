@@ -15,10 +15,8 @@ const { BufferGeometry, Float32BufferAttribute } = THREE
 
 const VERTICES_PER_SQUARE = 6;
 
-console.log("seems like the import works")
 
 self.addEventListener("message", ({ data }) => {
-  console.log("yeah, no way")
   if (data.action === "recurseSection") {
     const context = {
       vertices: data.section.vertices,
@@ -31,8 +29,7 @@ self.addEventListener("message", ({ data }) => {
     const levels = data.levels || 1;
     recurseSection.call(context, data.section, levels);
     postMessage({
-      vertices: context.vertices,
-      geometry: createGeometry(context.vertices),
+      vertices: context.vertices
     });
   }
 });
@@ -42,7 +39,6 @@ function reconstructFunction(functionString: string) {
     /\S*__WEBPACK_IMPORTED_MODULE_\d+__./g,
     ""
   );
-  // console.log("After reconstruction", functionString)
   let functionCode: string[] | string = functionString.split("\n");
   functionCode.pop();
   let functionSignature = functionCode.shift();
@@ -94,49 +90,6 @@ function recursivelyGenerate(vertexIndex: number) {
     VERTICES_PER_SQUARE,
     ...replacementVertices
   );
-}
-
-function createGeometry(section = this.vertices) {
-  // When called, generates a BufferGeometry out of the current vertices
-  const geometry = new BufferGeometry();
-  const positionNumComponents = 3;
-  const normalNumComponents = 3;
-  const uvNumComponents = 2;
-  const colorNumComponents = 3;
-  // Get vertex data in nice parallel arrays
-  const { positions, normals, uvs, colors } = section.reduce(
-    (acc: Record<string, any>, vertex: any) => {
-      acc.positions = acc.positions.concat(vertex.pos);
-      acc.normals = acc.normals.concat(vertex.norm);
-      acc.uvs = acc.uvs.concat(vertex.uv);
-      return acc;
-    },
-    { positions: [], normals: [], uvs: [], colors: [] }
-  );
-  // Use parallel arrays to create BufferGeometry
-  geometry.setAttribute(
-    "position",
-    new Float32BufferAttribute(
-      new Float32Array(positions),
-      positionNumComponents
-    )
-  );
-  geometry.setAttribute(
-    "normal",
-    new Float32BufferAttribute(new Float32Array(normals), normalNumComponents)
-  );
-  geometry.setAttribute(
-    "uv",
-    new Float32BufferAttribute(new Float32Array(uvs), uvNumComponents)
-  );
-  geometry.setAttribute(
-    "color",
-    new Float32BufferAttribute(new Float32Array(colors), colorNumComponents)
-  );
-  // geometry.setIndex(this.indices);
-  geometry.computeBoundingSphere();
-  geometry.computeVertexNormals();
-  return geometry;
 }
 
 function getSubSquares(props: any) {
