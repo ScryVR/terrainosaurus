@@ -10,9 +10,7 @@ let simplex = null;
 // @ts-ignore
 const { BufferGeometry, Float32BufferAttribute } = THREE;
 const VERTICES_PER_SQUARE = 6;
-console.log("seems like the import works");
 self.addEventListener("message", ({ data }) => {
-    console.log("yeah, no way");
     if (data.action === "recurseSection") {
         const context = {
             vertices: data.section.vertices,
@@ -31,7 +29,6 @@ self.addEventListener("message", ({ data }) => {
 });
 function reconstructFunction(functionString) {
     functionString = functionString.replace(/\S*__WEBPACK_IMPORTED_MODULE_\d+__./g, "");
-    // console.log("After reconstruction", functionString)
     let functionCode = functionString.split("\n");
     functionCode.pop();
     let functionSignature = functionCode.shift();

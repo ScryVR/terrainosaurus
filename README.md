@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository provides an [a-frame](https://aframe.io/docs/1.3.0/introduction/) component called `terrainosaurus-terrain`. This component is intended to be used as a ground surface in VR applications. It provides some default terrain generators, but custom generators can be provided. The terrain generator uses Web Workers to significantly improve performance.
+This repository provides an [a-frame](https://aframe.io/docs/1.3.0/introduction/) component called `terrainosaurus-terrain`. This component is intended to be used as a ground surface in VR applications. It provides some default terrain generators, but custom generators can be provided. The terrain generator uses Web Workers and chunking to significantly improve performance.
 
 [Click here to see some examples](#examples)
 
@@ -17,7 +17,7 @@ npm install terrainosaurus
 yarn add terrainosaurus
 ```
 
-Here is an example of using the client.
+Here is an example of initializing the component.
 
 ```javascript
 import { registerTerrainosaurusComponent } from "terrainosaurus-terrain";
@@ -31,6 +31,15 @@ vertexWorkerUrl.searchParams.append("isFile", "true")
 registerTerrainosaurusComponent({
   vertexWorkerUrl
 }, AFRAME) // Passing the aframe object allows Terrainosaurus to support using aframe via either NPM or a CDN.
+```
+
+Here is an example of including Terrainosaurus in a scene.
+
+```html
+<!-- Terrainosaurus uses a seeded random number generator to enable deterministic procedural generation. -->
+<a-scene>
+  <a-entity scale="7 7 7" terrainosaurus="seed: 123456;"></a-entity>
+</a-scene>
 ```
 
 ## Configuring Web Workers

@@ -1,17 +1,8 @@
-// TODO: Figure out how to do proper module imports in a web worker. This works for now, but it's messy
-// import "three";
-// @ts-ignore
-// import { SimplexNoise } from "simplex-noise-esm";
-
-// @ts-ignore
-import "https://unpkg.com/three@0.144.0/build/three.min.js";
 // @ts-ignore
 import { SimplexNoise } from "https://unpkg.com/simplex-noise-esm@2.5.0-esm.0/dist-esm/simplex-noise.js";
 
 let simplex: SimplexNoise | null = null
 
-// @ts-ignore
-const { BufferGeometry, Float32BufferAttribute } = THREE
 
 const VERTICES_PER_SQUARE = 6;
 

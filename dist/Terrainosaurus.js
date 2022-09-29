@@ -78,7 +78,6 @@ export class Terrainosaurus {
                 this.vertices.splice(spliceParams.start, spliceParams.end, ...event.data.vertices);
                 resolve(event.data.geometry);
             };
-            console.log("going to post a message");
             vertexWorker.postMessage({
                 action: "recurseSection",
                 seed: this.seed,
