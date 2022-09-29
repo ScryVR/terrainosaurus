@@ -23,6 +23,7 @@ export function registerTerrainosaurusComponent(
     schema: {
       seed: { type: "int", default: 1 },
       size: { type: "int", default: 20 },
+      cameraHeight: {type: "int", default: 1.5 },
       destroyClientOnRemoval: { type: "boolean", default: false },
       src: { type: "string" },
       wrapper: { type: "string" },
@@ -157,7 +158,7 @@ export function registerTerrainosaurusComponent(
         // TODO: Consider how to handle IRL changes in elevation when in AR mode.
         const yGround = this.intersections[0].point.y;
         const yCamera = this.cameraWorldPosition.y;
-        const controlInput = 0.4 * (yGround - yCamera + 2.2);
+        const controlInput = 0.4 * (yGround - yCamera + 1 + this.data.cameraHeight);
 
         // Note that we shift the ground, not camera. This makes AR mode work better
         this.displacementTarget.object3D.position.y =

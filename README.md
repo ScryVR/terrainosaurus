@@ -36,11 +36,21 @@ registerTerrainosaurusComponent({
 Here is an example of including Terrainosaurus in a scene.
 
 ```html
-<!-- Terrainosaurus uses a seeded random number generator to enable deterministic procedural generation. -->
 <a-scene>
-  <a-entity scale="7 7 7" terrainosaurus="seed: 123456;"></a-entity>
+  <a-enity id="terrain-wrapper">
+    <a-entity scale="7 7 7" terrainosaurus="seed: 123456; wrapper: #terrain-wrapper;"></a-entity>
+    <a-box></a-box>
+  </a-entity>
 </a-scene>
 ```
+
+The following table contains descriptions of the available `terrainosaurus` attributes.
+
+| Attribute      | Details                                                                                                                                                                                                                                                                                            | Default     |   |   |
+|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|---|---|
+| `seed`         | Used to initialize the seeded random number generator.<br>Using the same number results in the same terrain being generated.<br>This behavior is only guaranteed for the default generator.                                                                                                        | 1           |   |   |
+| `cameraHeight` | Adjusts the distance between the camera and the ground.<br>Adjusting the position of the camera itself won't work by default<br>due to how Terrainosaurus calculates the terrain position.                                                                                                         | 1.5         |   |   |
+| `wrapper`      | Used to indicate which element should be targeted when anchoring<br>the ground to the camera. Useful when including other entities in<br>a scene that should be anchored to the ground. **NOTE:** Any other<br>entities included in the wrapper element are also counted in<br>collision detection. | `undefined` |   |   |
 
 ## Configuring Web Workers
 
@@ -86,9 +96,9 @@ const vertexWorkerUrlWithRelativePath = new URL("/some/path/to/vertex-worker.js"
 
 The component created by `registerTerrainosaurusComponent` does a few things worth noting.
 
-* *It creates a map with chunking*
-instead of creating one large geometry object it creates 16 smaller ones and adds them as children. **NOTE**: This is relevant when raycasting. Instead of trying to collide with `[terrainosaurus-terrain]`, it may make more sense to collide with `.terrainosaurus-chunk`.
-* *It moves up and down so the player is always touching the ground*
+* **It creates a map with chunking.**
+Instead of creating one large geometry object, it creates 16 smaller ones and adds them as children. This is relevant when raycasting. Instead of trying to collide with `[terrainosaurus-terrain]`, it may make more sense to collide with `.terrainosaurus-chunk`.
+* **It moves up and down so the player is always touching the ground.**
 The component does some raycasting to find the distance between the camera position and the ground underneath it. The terrain adjusts its position accordingly. By default, the terrain moves itself rather than the camera in order to not conflict with other movement controls that might be in use. This approach also makes AR mode work much more simply.
 
 ## Custom terrain generators
@@ -129,7 +139,7 @@ registerTerrainosaurusComponent({
 The `generator` and `generatorSelector` functions must adhere to some strict guidelines since they have to run in the Web Worker context.
 
 * The functions must be declared inline and cannot be anonymous.
-* The functions cannot have any dependencies beyond standard libraries (e.g., `Math`) and `THREE`.
+* The functions cannot have any dependencies beyond standard libraries (e.g., `Math`). This restriction exists because Web Workers make importing modules a little difficult and I have not yet found a clean solution for improving this.
 
 ## Development and publishing
 

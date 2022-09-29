@@ -42,7 +42,6 @@
       >
         <a-entity camera
           id="head"
-          position="0 1.2 0"
           look-controls="pointerLockEnabled: false"
         >
         </a-entity>
@@ -57,7 +56,7 @@
       <a-sky color="#aae" material="fog: false;"></a-sky>
     </a-scene>
     <script>
-      document.querySelector("#terrain")?.setAttribute("terrainosaurus-terrain", { seed: Math.random(), src: "#grassTexture" })
+      document.querySelector("#terrain")?.setAttribute("terrainosaurus-terrain", { seed: Math.random(), src: "#grassTexture", cameraHeight: 1.5, })
       document.querySelector("[cursor-teleport")?.setAttribute("cursor-teleport", {
         collisionEntities: ".terrainosaurus-chunk"
       })
