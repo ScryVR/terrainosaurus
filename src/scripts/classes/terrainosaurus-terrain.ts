@@ -53,18 +53,23 @@ export function registerTerrainosaurusComponent(
         );
         this.chunks[i].classList.add("terrainosaurus-chunk");
         this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
-        this.chunks[i].setAttribute("material", {
-          side: "double",
-          vertexColors: "vertex",
-          shader: "standard",
-          roughness: 1,
-        });
-        // This logic might get more complicated later as we support proper texturing
-        // if (this.data.src) {
-        //   this.chunks[i].setAttribute("material", {
-        //     src: this.data.src,
-        //   });
-        // }
+        if (this.data.src) {
+          console.log("We have a src", this.data.src)
+          this.chunks[i].setAttribute("material", {
+            side: "double",
+            src: this.data.src,
+            shader: "standard",
+            roughness: 1
+          });
+        } else {
+          console.log("no src", this.data)
+          this.chunks[i].setAttribute("material", {
+            side: "double",
+            vertexColors: "vertex",
+            shader: "standard",
+            roughness: 1,
+          });
+        }
         this.el.appendChild(this.chunks[i]);
       }
       terrainClient

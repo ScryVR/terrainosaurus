@@ -51,6 +51,7 @@ The following table contains descriptions of the available `terrainosaurus` attr
 | `seed`         | Used to initialize the seeded random number generator.<br>Using the same number results in the same terrain being generated.<br>This behavior is only guaranteed for the default generator.                                                                                                        | 1           |   |   |
 | `cameraHeight` | Adjusts the distance between the camera and the ground.<br>Adjusting the position of the camera itself won't work by default<br>due to how Terrainosaurus calculates the terrain position.                                                                                                         | 1.5         |   |   |
 | `wrapper`      | Used to indicate which element should be targeted when anchoring<br>the ground to the camera. Useful when including other entities in<br>a scene that should be anchored to the ground. **NOTE:** Any other<br>entities included in the wrapper element are also counted in<br>collision detection. | `undefined` |   |   |
+| `src`          | The `material.src` attribute that is applied to the terrain chunks.<br>If no selector is given, vertex coloring will be used.<br>The current vertex coloring algorithm is a placeholder. | `undefined` | | |
 
 ## Configuring Web Workers
 
