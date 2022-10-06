@@ -2,6 +2,7 @@ export interface IRegisterProps {
   generators?: Array<(...args: any) => any>;
   generatorSelector?: (...args: any) => number;
   vertexWorkerUrl?: string | URL;
+  caveWorkerUrl?: string | URL;
   state?: any;
 }
 

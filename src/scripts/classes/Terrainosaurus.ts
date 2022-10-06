@@ -1,4 +1,4 @@
-import { BufferGeometry, Float32BufferAttribute } from "three";
+import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
 import { defaultGenerators, defaultGeneratorSelector } from "./generators";
 // @ts-ignore
 import { SimplexNoise } from 'simplex-noise-esm'
@@ -23,7 +23,8 @@ export class Terrainosaurus {
   generators: Array<(args: any) => any>;
   generatorSelector: (...args: any) => number;
   vertexWorker?: Worker;
-  vertexWorkerUrl?: string | URL;
+    vertexWorkerUrl?: string | URL;
+    caveWorkerUrl?: string | URL;
 
   constructor(props: ITerrainosaurusProps) {
     this.vertices = [];
@@ -38,6 +39,7 @@ export class Terrainosaurus {
     this.seed = (props.seed || Math.random()).toString()
     this.state.simplex = new SimplexNoise(this.seed)
     this.setInitialVertices(this.offset);
+      this.caveWorkerUrl = props.caveWorkerUrl;
   }
 
   setInitialVertices(offset: number) {
@@ -101,6 +103,23 @@ export class Terrainosaurus {
       });
     });
   }
+
+    async cavePass() {
+      return new Promise((resolve, reject) => {
+        if (!this.caveWorkerUrl) {
+          reject("Cannot recurse in background - vertexWorkerUrl not provided in constructor")
+        }
+        const caveWorker = new Worker(this.caveWorkerUrl, { type: "module" });
+        caveWorker.onmessage = (event) => {
+          resolve(event);
+        };
+        caveWorker.postMessage({
+          action: "caveMeBro",
+          vertices: this.vertices
+        });
+    }); 
+  } 
+    
   recursivelyGenerate(vertexIndex: number) {
     /**
      * Replaces a given square with 4 smaller squares.
@@ -312,6 +331,12 @@ export class Terrainosaurus {
     ];
     return newVertices;
   }
+  
+  createCaveGeometry() {
+    const geometry = new BufferGeometry();
+    return geometry;
+  }
+
   createGeometry(section: Array<IVertex> = this.vertices) {
     // When called, generates a BufferGeometry out of the current vertices
     const geometry = new BufferGeometry();
@@ -356,7 +381,7 @@ export class Terrainosaurus {
       "color",
       new Float32BufferAttribute(new Float32Array(colors), colorNumComponents)
     )
-    // geometry.setIndex(this.indices);
+
     return geometry;
   }
 }

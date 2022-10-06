@@ -8,7 +8,7 @@
  */
 
 import { AFrame } from "aframe";
-import { Raycaster, Vector3 } from "three";
+import { Float32BufferAttribute, Raycaster, Vector3 } from "three";
 import { IRegisterProps, ITerrainosaurusProps } from "./interfaces";
 import { Terrainosaurus } from "./Terrainosaurus";
 
@@ -23,6 +23,7 @@ export function registerTerrainosaurusComponent(
     schema: {
       seed: { type: "int", default: 1 },
       size: { type: "int", default: 20 },
+      collide: { type: "boolean", default: true },
       cameraHeight: {type: "int", default: 1.5 },
       destroyClientOnRemoval: { type: "boolean", default: false },
       src: { type: "string" },
@@ -91,6 +92,13 @@ export function registerTerrainosaurusComponent(
                 .then(() => {
                   console.log(terrainClient.getSection([1, 1]));
                   this.updateChunkGeometries();
+                  terrainClient.cavePass().then((event: any) => {
+                    const caveEl = document.createElement("a-entity");
+                      caveEl.setAttribute("geometry", { primitive: this.createCaveGeometryComponent(terrainClient) });
+                      caveEl.setAttribute("material", { color: "red", wireframe: true, shader: "flat", wireframeLinewidth: 10, fog: false});
+                    this.el.appendChild(caveEl);
+                    console.log(event.data.message);
+                  });
                 });
             });
         });
@@ -117,16 +125,18 @@ export function registerTerrainosaurusComponent(
         }
       }
     },
-    tick() {
-      this.camera.object3D.getWorldPosition(this.cameraWorldPosition);
-      this.cameraWorldPosition.y += 1;
-      this.raycaster.set(this.cameraWorldPosition, this.DOWN_VECTOR);
-      this.raycaster.intersectObject(
-        this.displacementTarget.object3D,
-        true,
-        this.intersections
-      );
-      this.handleIntersection();
+      tick() {
+        if(this.data.collide) {
+          this.camera.object3D.getWorldPosition(this.cameraWorldPosition);
+          this.cameraWorldPosition.y += 1;
+          this.raycaster.set(this.cameraWorldPosition, this.DOWN_VECTOR);
+          this.raycaster.intersectObject(
+            this.displacementTarget.object3D,
+            true,
+            this.intersections
+          );
+          this.handleIntersection();
+          }
     },
     updateChunkGeometries() {
       // Should be called after new vertices are calculated.
@@ -152,6 +162,29 @@ export function registerTerrainosaurusComponent(
           );
           geometry.computeBoundingSphere();
           geometry.computeVertexNormals();
+          this.geometry = geometry;
+        },
+      });
+      return name;
+    },
+    createCaveGeometryComponent(
+      terrainClient: Terrainosaurus,
+    ) {
+      const name = `terrainosaurus-cave-${Math.floor(Math.random() * 100000)}`;
+      registerGeometry(name, {
+        init() {
+          const geometry = terrainClient.createCaveGeometry( );
+
+          const points = [];
+          points.push( new Vector3( 0, 0 ,0 ) );
+          points.push( new Vector3( 1000, 1000, 1000 ) );
+          points.push( new Vector3( 500, 1000, 200 ) );
+          points.push( new Vector3( 500, 0, 200 ) );
+          geometry.setFromPoints(points);
+
+          geometry.computeBoundingSphere();
+          geometry.computeVertexNormals();
+
           this.geometry = geometry;
         },
       });

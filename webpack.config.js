@@ -15,7 +15,7 @@ module.exports = {
   // Webpack needs to know where to start the bundling process,
   // so we define the main JS and Sass files, both under
   // the './src' directory
-  entry: ['./src/scripts/main.ts', './src/styles/main.scss', './src/scripts/classes/vertex-worker.ts'], // MODIFICATION: Use main.ts instead of main.js
+    entry: ['./src/scripts/main.ts', './src/styles/main.scss', './src/scripts/classes/vertex-worker.ts', './src/scripts/classes/cave-worker.ts'], // MODIFICATION: Use main.ts instead of main.js
   // This is where we define the path where Webpack will place
   // the bundled JS file
   output: {
@@ -51,6 +51,14 @@ module.exports = {
           publicPath: "assets/scripts/",
           outputPath: "assets/scripts",
           filename: "vertex-worker.js"
+        }
+      },
+      {
+        test: /cave-worker/,
+        generator: {
+          publicPath: "assets/scripts/",
+          outputPath: "assets/scripts",
+          filename: "cave-worker.js"
         }
       },
       {
