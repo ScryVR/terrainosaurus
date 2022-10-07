@@ -1,4 +1,4 @@
-import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
+import { BufferGeometry, Float32BufferAttribute, Vector3, Vector2 } from "three";
 import { defaultGenerators, defaultGeneratorSelector } from "./generators";
 // @ts-ignore
 import { SimplexNoise } from "simplex-noise-esm";
@@ -327,6 +327,7 @@ export class Terrainosaurus {
     );
     return newVertices;
   }
+    
   createGeometry(section: Array<IVertex> = this.vertices) {
     // When called, generates a BufferGeometry out of the current vertices
     const geometry = new BufferGeometry();
@@ -347,10 +348,32 @@ export class Terrainosaurus {
         } else {
           acc.colors = acc.colors.concat(0.5, 0.9, 0.5);
         }
+          acc.colors = acc.colors.concat(vertex.color);
         return acc;
       },
       { positions: [], normals: [], uvs: [], colors: [] }
     );
+
+      const center = new Vector3(0,0,0);
+      const radius = 2;
+      for(let i = 0; i < positions.length; i+=3) {
+
+          const planePos = new Vector3(positions[i], positions[i+1], positions[i+2])
+
+          if(Math.abs(planePos.distanceTo(center)) < radius) {
+              const y = center.y - Math.sqrt(Math.abs(radius**2 - (positions[i]-center.x)**2 - (positions[i+2]-center.z)**2));
+              
+              positions[i+1] = y;
+
+              colors[i] = Math.abs(planePos.distanceTo(center)) / radius
+              colors[i+1] = 0
+              colors[i+2] = 1-(Math.abs(planePos.distanceTo(center)) / radius)
+          } else {
+              colors[i] = 0
+              colors[i+1] = 1
+              colors[i+2] = 0
+          }
+      }
     // Use parallel arrays to create BufferGeometry
     geometry.setAttribute(
       "position",

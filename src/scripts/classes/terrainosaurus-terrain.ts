@@ -84,8 +84,8 @@ export function registerTerrainosaurusComponent(
               { vertices: terrainClient.vertices, absoluteIndex: 0 },
               1
             )
-            .then(() => {
-              this.updateChunkGeometries();
+              .then(() => {
+                this.updateChunkGeometries();
             });
         });
 

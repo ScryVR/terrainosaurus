@@ -16,15 +16,13 @@
       </a-assets>
       <a-entity light="type: ambient; color: #FFF; intensity: 0.2;"></a-entity>
       <a-entity
-        light="type: directional; color: #FFF; intensity: 3"
+        light="type: directional; color: #FFF; intensity: 10"
         position="-2 1 1"
-        animation="property: position; to: 2 1 1; dur: 10000; dir: alternate; loop: true;"
-        animation__intensity="property: light.intensity; to: 1; dur: 10000; dir: alternate; loop: true;"
       >
       </a-entity>
       <a-entity
         id="terrain"
-        position="0 6 -10"
+        position="0 0 0"
         scale="6 6 6"
         material="shader: standard; side: double; wireframe: false;"
         >
@@ -46,7 +44,7 @@
         >
         </a-entity>
         <a-entity cursor="fuse: false; rayOrigin: mouse"
-          position="0 1.2 -2"
+          position="0 1.2 0"
           raycaster="objects: .terrainosaurus-chunk;"
           teleport-controls="
             cameraRig: #cameraRig;
@@ -56,7 +54,7 @@
       <a-sky color="#aae" material="fog: false;"></a-sky>
     </a-scene>
     <script>
-      document.querySelector("#terrain")?.setAttribute("terrainosaurus-terrain", { seed: Math.random(), src: "#grassTexture", cameraHeight: 1.5, })
+      document.querySelector("#terrain")?.setAttribute("terrainosaurus-terrain", { seed: 123, cameraHeight: 1.5, })
       document.querySelector("[cursor-teleport")?.setAttribute("cursor-teleport", {
         collisionEntities: ".terrainosaurus-chunk"
       })
