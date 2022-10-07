@@ -67,7 +67,8 @@ export function registerTerrainosaurusComponent(
             side: "double",
             vertexColors: "vertex",
             shader: "standard",
-            roughness: 1,
+              roughness: 1,
+              wireframe: true
           });
         }
         this.el.appendChild(this.chunks[i]);

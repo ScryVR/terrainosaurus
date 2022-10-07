@@ -354,20 +354,28 @@ export class Terrainosaurus {
       { positions: [], normals: [], uvs: [], colors: [] }
     );
 
-      const center = new Vector3(0,0,0);
+      const center = new Vector3(0,1,0);
       const radius = 2;
       for(let i = 0; i < positions.length; i+=3) {
+          
+          positions[i+1] = 0;
 
-          const planePos = new Vector3(positions[i], positions[i+1], positions[i+2])
+          const pointPos = new Vector3(positions[i], positions[i+1], positions[i+2])
 
-          if(Math.abs(planePos.distanceTo(center)) < radius) {
-              const y = center.y - Math.sqrt(Math.abs(radius**2 - (positions[i]-center.x)**2 - (positions[i+2]-center.z)**2));
+          if(Math.abs(pointPos.distanceTo(center)) < radius) {
+              const yDisplacement = Math.sqrt(Math.abs(radius**2 - (positions[i]-center.x)**2 - (positions[i+2]-center.z)**2));
+              const centerModifiable = new Vector3(center.x ,center.y - yDisplacement,center.z);
+              centerModifiable.add(pointPos)
+              centerModifiable.normalize().multiplyScalar(radius);
               
-              positions[i+1] = y;
+              
+              positions[i] = centerModifiable.x;
+              positions[i+1] = centerModifiable.y;
+              positions[i+2] = centerModifiable.z;
 
-              colors[i] = Math.abs(planePos.distanceTo(center)) / radius
+              colors[i] = 1
               colors[i+1] = 0
-              colors[i+2] = 1-(Math.abs(planePos.distanceTo(center)) / radius)
+              colors[i+2] = 0
           } else {
               colors[i] = 0
               colors[i+1] = 1
