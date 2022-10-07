@@ -1,7 +1,7 @@
-import { BufferGeometry, Float32BufferAttribute } from "three";
+import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
 import { defaultGenerators, defaultGeneratorSelector } from "./generators";
 // @ts-ignore
-import { SimplexNoise } from 'simplex-noise-esm'
+import { SimplexNoise } from "simplex-noise-esm";
 import {
   IVertex,
   ITerrainosaurusProps,
@@ -12,6 +12,7 @@ import {
 const VERTICES_PER_SQUARE = 6; // This will change to 4 if/when we do some memory optimizations
 
 export class Terrainosaurus {
+  THREE: any;
   size: number;
   seed: string;
   offset: number;
@@ -34,10 +35,11 @@ export class Terrainosaurus {
     this.generatorSelector =
       props.generatorSelector || defaultGeneratorSelector;
     this.generators = props.generators || defaultGenerators;
-    this.vertexWorkerUrl = props.vertexWorkerUrl
-    this.seed = (props.seed || Math.random()).toString()
-    this.state.simplex = new SimplexNoise(this.seed)
+    this.vertexWorkerUrl = props.vertexWorkerUrl;
+    this.seed = (props.seed || Math.random()).toString();
+    this.state.simplex = new SimplexNoise(this.seed);
     this.setInitialVertices(this.offset);
+    this.THREE = { Vector3 };
   }
 
   setInitialVertices(offset: number) {
@@ -80,15 +82,21 @@ export class Terrainosaurus {
     }
     return new Promise((resolve, reject) => {
       if (!this.vertexWorkerUrl) {
-        reject("Cannot recurse in background - vertexWorkerUrl not provided in constructor")
+        reject(
+          "Cannot recurse in background - vertexWorkerUrl not provided in constructor"
+        );
       }
       const vertexWorker = new Worker(this.vertexWorkerUrl, { type: "module" });
       const spliceParams = {
         start: section.absoluteIndex,
-        end: section.vertices.length
-      }
+        end: section.vertices.length,
+      };
       vertexWorker.onmessage = (event) => {
-        this.vertices.splice(spliceParams.start, spliceParams.end, ...event.data.vertices)
+        this.vertices.splice(
+          spliceParams.start,
+          spliceParams.end,
+          ...event.data.vertices
+        );
         resolve(event.data.geometry);
       };
       vertexWorker.postMessage({
@@ -96,7 +104,7 @@ export class Terrainosaurus {
         seed: this.seed,
         section: { vertices: section.vertices, absoluteIndex: 0 },
         generatorSelector: this.generatorSelector.toString(),
-        generators: this.generators.map(gen => gen.toString()),
+        generators: this.generators.map((gen) => gen.toString()),
         levels,
       });
     });
@@ -126,7 +134,7 @@ export class Terrainosaurus {
     let replacementVertices = this.getSubSquares({
       vertices: verticesToReplace,
       recursions,
-      vertexIndex
+      vertexIndex,
     });
 
     this.vertices.splice(
@@ -184,17 +192,6 @@ export class Terrainosaurus {
       p3: topRight,
       p4: topLeft,
     });
-
-    const generator =
-      this.generators[
-        this.generatorSelector.call(this, { topLeft, topRight, bottomLeft, bottomRight, center, vertexIndex: props.vertexIndex })
-      ];
-    center = generator.call(this, center, {
-      topLeft,
-      topRight,
-      bottomLeft,
-      bottomRight,
-    }, this.state.simplex.noise2D(center.x + 10, center.z + 10)); // Offset since simplex noise is always 0 at 0, 0
 
     const baseVertex = vertexGenerator(recursions);
     const newVertices: any = [
@@ -310,6 +307,24 @@ export class Terrainosaurus {
       },
       { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
     ];
+
+    const generator =
+      this.generators[
+        this.generatorSelector({
+          topLeft,
+          topRight,
+          bottomLeft,
+          bottomRight,
+          vertexIndex: props.vertexIndex,
+        })
+      ];
+    generator.call(
+      this,
+      newVertices,
+      newVertices.map((v: any) =>
+        this.state.simplex.noise2D(v.pos[0], v.pos[2])
+      )
+    );
     return newVertices;
   }
   createGeometry(section: Array<IVertex> = this.vertices) {
@@ -355,7 +370,7 @@ export class Terrainosaurus {
     geometry.setAttribute(
       "color",
       new Float32BufferAttribute(new Float32Array(colors), colorNumComponents)
-    )
+    );
     // geometry.setIndex(this.indices);
     return geometry;
   }

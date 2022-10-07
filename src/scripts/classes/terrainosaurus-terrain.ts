@@ -86,12 +86,6 @@ export function registerTerrainosaurusComponent(
             )
             .then(() => {
               this.updateChunkGeometries();
-              terrainClient
-                .recurseSectionInBackground(terrainClient.getSection([1]))
-                .then(() => {
-                  console.log(terrainClient.getSection([1, 1]));
-                  this.updateChunkGeometries();
-                });
             });
         });
 

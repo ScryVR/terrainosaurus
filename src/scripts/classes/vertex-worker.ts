@@ -1,4 +1,6 @@
 // @ts-ignore
+import "https://unpkg.com/three@0.144.0/build/three.min.js";
+// @ts-ignore
 import { SimplexNoise } from "https://unpkg.com/simplex-noise-esm@2.5.0-esm.0/dist-esm/simplex-noise.js";
 
 let simplex: SimplexNoise | null = null
@@ -13,6 +15,8 @@ self.addEventListener("message", ({ data }) => {
       vertices: data.section.vertices,
       generators: data.generators.map((f: string) => reconstructFunction(f)),
       generatorSelector: reconstructFunction(data.generatorSelector),
+      // @ts-ignore
+      THREE
     };
     if (!simplex) {
       simplex = new SimplexNoise(data.seed || Math.random().toString())
@@ -94,22 +98,22 @@ function getSubSquares(props: any) {
     p4: topLeft,
   });
 
-  const generator =
-    this.generators[
-      this.generatorSelector({
-        topLeft,
-        topRight,
-        bottomLeft,
-        bottomRight,
-        vertexIndex: props.vertexIndex,
-      })
-    ];
-  center = generator.call(this, center, {
-    topLeft,
-    topRight,
-    bottomLeft,
-    bottomRight,
-  }, simplex.noise2D(center.x + 10, center.z + 10)); // Offset since simplex noise is always 0 at 0, 0
+  // const generator =
+  //   this.generators[
+  //     this.generatorSelector({
+  //       topLeft,
+  //       topRight,
+  //       bottomLeft,
+  //       bottomRight,
+  //       vertexIndex: props.vertexIndex,
+  //     })
+  //   ];
+  // center = generator.call(this, center, {
+  //   topLeft,
+  //   topRight,
+  //   bottomLeft,
+  //   bottomRight,
+  // }, simplex.noise2D(center.x + 10, center.z + 10)); // Offset since simplex noise is always 0 at 0, 0
 
   const baseVertex = vertexGenerator(recursions);
   const newVertices = [
@@ -209,6 +213,17 @@ function getSubSquares(props: any) {
     },
     { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
   ];
+  const generator =
+    this.generators[
+      this.generatorSelector({
+        topLeft,
+        topRight,
+        bottomLeft,
+        bottomRight,
+        vertexIndex: props.vertexIndex,
+      })
+    ];
+  center = generator.call(this, newVertices, newVertices.map(v => simplex.noise2D(v.pos[0], v.pos[2])))
   return newVertices;
 }
 

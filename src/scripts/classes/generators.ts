@@ -18,24 +18,54 @@ export interface ICorners {
   bottomRight: IVertex;
 }
 
+
 export const defaultGenerators: Array<(...args: any) => any> = [
-  (center: IPoint, corners: ICorners, randomNumber: number) => {
-    const JAGGEDNESS = 1.3;
-    const displacementFactor = (corners.topRight.recursions + 1) / JAGGEDNESS
-    const maxDisplacement = Math.pow((corners.topRight.pos[0] - corners.topLeft.pos[0]), 0.6) / displacementFactor
-    const displacement = randomNumber * maxDisplacement
-    
-    return {
-      x: center.x,
-      y: center.y + displacement,
-      z: center.z
+  (vertices, randomValues) => {
+    const VERTEX_INDICES = {
+      CENTER: [0, 7, 10, 14, 15, 23],
+      TOP_MIDDLE: [2, 3, 11],
+      BOTTOM_MIDDLE: [12, 19, 22],
+      LEFT_MIDDLE: [1, 4, 17],
+      RIGHT_MIDDLE: [6, 20, 21]
     }
+    const squareSize = (vertices[1].pos[0] - vertices[0].pos[0])
+    Object.values(VERTEX_INDICES).forEach(indices => {
+      const displacement = randomValues[indices[0]] * squareSize / Math.pow(vertices[0].recursions + 1, 0.7)
+      indices.forEach(index => vertices[index].pos[1] += displacement)
+    })
+    return vertices
+    // const topLeftSquare = vertices.slice(0, 3)
+    // const [
+    //   center,
+    //   leftMiddle,
+    //   topMiddle,
+    // ] = topLeftSquare.pos
+    // const bottomRightSquare = vertices.slice(vertices.length - 3, vertices.length)
+    // const [
+    //   _,
+    //   bottomMiddle,
+    //   rightMiddle
+    // ] = bottomRightSquare.pos
+
+    // const displacement = randomNumber * (corners.topRight.pos[0] - corners.topLeft.pos[0]) / (corners.topRight.recursions + 1)
+    // return {
+    //   x: center.x,
+    //   y: center.y + displacement,
+    //   z: center.z
+    // }
   }
 ]
 
-export function orthogonalDisplacer (center: IPoint, corners: ICorners) {
-  let normalVector = new Vector3()
-  let crossVector = new Vector3()
+export function orthogonalDisplacer (center: IPoint, corners: ICorners, randomNumber: number) {
+  const VERTEX_INDICES = {
+    CENTER: [0, 7, 10, 14, 15, 23],
+    TOP_MIDDLE: [2, 3, 11],
+    BOTTOM_MIDDLE: [12, 19, 22],
+    LEFT_MIDDLE: [1, 4, 17],
+    RIGHT_MIDDLE: [6, 20, 21]
+  }
+  let normalVector = new this.THREE.Vector3()
+  let crossVector = new this.THREE.Vector3()
   /**
    * Compute normal vector by taking the cross product of the 
    * vectors from the center to the bottom right corner and the top right corner.
@@ -53,8 +83,7 @@ export function orthogonalDisplacer (center: IPoint, corners: ICorners) {
   )
   normalVector.cross(crossVector).normalize()
   
-  const maxDisplacement = (corners.topRight.pos[0] - corners.topLeft.pos[0]) / 1.2
-  const scalingFactor = Math.random() * maxDisplacement - 3 * maxDisplacement / 4
+  const scalingFactor = Math.abs(randomNumber * (corners.topRight.pos[0] - corners.topLeft.pos[0]) / (corners.topLeft.recursions + 1))
 
   normalVector.multiplyScalar(scalingFactor)
   
