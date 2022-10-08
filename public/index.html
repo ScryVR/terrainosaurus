@@ -56,7 +56,7 @@
       <a-sky color="#aae" material="fog: false;"></a-sky>
     </a-scene>
     <script>
-      document.querySelector("#terrain")?.setAttribute("terrainosaurus-terrain", { seed: Math.random(), src: "#grassTexture", cameraHeight: 1.5, })
+      document.querySelector("#terrain")?.setAttribute("terrainosaurus-terrain", { seed: Math.random(), cameraHeight: 1.5, })
       document.querySelector("[cursor-teleport")?.setAttribute("cursor-teleport", {
         collisionEntities: ".terrainosaurus-chunk"
       })

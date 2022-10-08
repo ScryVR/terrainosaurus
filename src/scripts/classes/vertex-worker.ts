@@ -213,6 +213,13 @@ function getSubSquares(props: any) {
     },
     { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
   ];
+  // const bottomRightIndices = newVertices.reduce((acc, v, index) => {
+  //   if (v.pos[0] === bottomRight.pos[0] && v.pos[2] === bottomRight.pos[2]) {
+  //     acc.push(index)
+  //   }
+  //   return acc
+  // }, [])
+  // console.log({ bottomRightIndices })
   const generator =
     this.generators[
       this.generatorSelector({
