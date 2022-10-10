@@ -1,9 +1,10 @@
-import { BufferGeometry, Float32BufferAttribute } from "three";
+import { BufferGeometry, Float32BufferAttribute, Vector3 } from "three";
 import { defaultGenerators, defaultGeneratorSelector } from "./generators";
 // @ts-ignore
-import { SimplexNoise } from 'simplex-noise-esm';
+import { SimplexNoise } from "simplex-noise-esm";
 const VERTICES_PER_SQUARE = 6; // This will change to 4 if/when we do some memory optimizations
 export class Terrainosaurus {
+    THREE;
     size;
     seed;
     offset;
@@ -29,6 +30,7 @@ export class Terrainosaurus {
         this.seed = (props.seed || Math.random()).toString();
         this.state.simplex = new SimplexNoise(this.seed);
         this.setInitialVertices(this.offset);
+        this.THREE = { Vector3 };
     }
     setInitialVertices(offset) {
         // Initialize such that we can use diamond-square displacement
@@ -72,7 +74,7 @@ export class Terrainosaurus {
             const vertexWorker = new Worker(this.vertexWorkerUrl, { type: "module" });
             const spliceParams = {
                 start: section.absoluteIndex,
-                end: section.vertices.length
+                end: section.vertices.length,
             };
             vertexWorker.onmessage = (event) => {
                 this.vertices.splice(spliceParams.start, spliceParams.end, ...event.data.vertices);
@@ -83,7 +85,7 @@ export class Terrainosaurus {
                 seed: this.seed,
                 section: { vertices: section.vertices, absoluteIndex: 0 },
                 generatorSelector: this.generatorSelector.toString(),
-                generators: this.generators.map(gen => gen.toString()),
+                generators: this.generators.map((gen) => gen.toString()),
                 levels,
             });
         });
@@ -106,7 +108,7 @@ export class Terrainosaurus {
         let replacementVertices = this.getSubSquares({
             vertices: verticesToReplace,
             recursions,
-            vertexIndex
+            vertexIndex,
         });
         this.vertices.splice(vertexIndex, VERTICES_PER_SQUARE, ...replacementVertices);
     }
@@ -151,13 +153,6 @@ export class Terrainosaurus {
             p3: topRight,
             p4: topLeft,
         });
-        const generator = this.generators[this.generatorSelector.call(this, { topLeft, topRight, bottomLeft, bottomRight, center, vertexIndex: props.vertexIndex })];
-        center = generator.call(this, center, {
-            topLeft,
-            topRight,
-            bottomLeft,
-            bottomRight,
-        }, this.state.simplex.noise2D(center.x + 10, center.z + 10)); // Offset since simplex noise is always 0 at 0, 0
         const baseVertex = vertexGenerator(recursions);
         const newVertices = [
             // Top left square
@@ -265,6 +260,14 @@ export class Terrainosaurus {
             },
             { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
         ];
+        const generator = this.generators[this.generatorSelector({
+            topLeft,
+            topRight,
+            bottomLeft,
+            bottomRight,
+            vertexIndex: props.vertexIndex,
+        })];
+        generator.call(this, newVertices, newVertices.map((v) => this.state.simplex.noise2D(v.pos[0], v.pos[2])));
         return newVertices;
     }
     createGeometry(section = this.vertices) {

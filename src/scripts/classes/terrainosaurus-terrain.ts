@@ -23,7 +23,7 @@ export function registerTerrainosaurusComponent(
     schema: {
       seed: { type: "int", default: 1 },
       size: { type: "int", default: 20 },
-      cameraHeight: {type: "int", default: 1.5 },
+      cameraHeight: { type: "int", default: 1.5 },
       destroyClientOnRemoval: { type: "boolean", default: false },
       src: { type: "string" },
       wrapper: { type: "string" },
@@ -41,15 +41,14 @@ export function registerTerrainosaurusComponent(
       // Initialize chunks. For now, there is no control over the number of recursions, whether they happen in the background, etc.
       // Recurse until we get 8 chunks per side.
       const terrainClient = _terrainosaurusMap[this.terrainosaurusId];
-      terrainClient.recurseFullMap(3);
-
+      terrainClient.recurseFullMap(4);
       // Create separate entities for each chunk
       this.chunks = [];
-      for (let i = 0; i < 16; i++) {
+      for (let i = 0; i < 64; i++) {
         this.chunks.push(document.createElement("a-entity"));
         const chunkGeometry = this.createGeometryComponent(
           terrainClient,
-          getQuadrantPath(i)
+          chunkIndexToQuadrantPath(i)
         );
         this.chunks[i].classList.add("terrainosaurus-chunk");
         this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
@@ -58,7 +57,7 @@ export function registerTerrainosaurusComponent(
             side: "double",
             src: this.data.src,
             shader: "standard",
-            roughness: 1
+            roughness: 1,
           });
         } else {
           this.chunks[i].setAttribute("material", {
@@ -77,14 +76,14 @@ export function registerTerrainosaurusComponent(
         )
         .then(() => {
           this.updateChunkGeometries();
-          terrainClient
-            .recurseSectionInBackground(
-              { vertices: terrainClient.vertices, absoluteIndex: 0 },
-              1
-            )
-            .then(() => {
-              this.updateChunkGeometries();
-            });
+          // terrainClient
+          //   .recurseSectionInBackground(
+          //     { vertices: terrainClient.vertices, absoluteIndex: 0 },
+          //     1
+          //   )
+          //   .then(() => {
+          //     this.updateChunkGeometries();
+          //   });
         });
 
       // Set up stuff for terrain navigation
@@ -124,10 +123,10 @@ export function registerTerrainosaurusComponent(
       // Should be called after new vertices are calculated.
       // Creates new geometries and assigns them to the chunks.
       const terrainClient = _terrainosaurusMap[this.terrainosaurusId];
-      for (let i = 0; i < 16; i++) {
+      for (let i = 0; i < 64; i++) {
         const chunkGeometry = this.createGeometryComponent(
           terrainClient,
-          getQuadrantPath(i)
+          chunkIndexToQuadrantPath(i)
         );
         this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
       }
@@ -155,7 +154,8 @@ export function registerTerrainosaurusComponent(
         // TODO: Consider how to handle IRL changes in elevation when in AR mode.
         const yGround = this.intersections[0].point.y;
         const yCamera = this.cameraWorldPosition.y;
-        const controlInput = 0.4 * (yGround - yCamera + 1 + this.data.cameraHeight);
+        const controlInput =
+          0.4 * (yGround - yCamera + 1 + this.data.cameraHeight);
 
         // Note that we shift the ground, not camera. This makes AR mode work better
         this.displacementTarget.object3D.position.y =
@@ -187,25 +187,50 @@ function getRandomId() {
   return Math.floor(1 + Math.random() * 10000000).toString();
 }
 
-// There should be a way to reduce this to a single expression, but I can't be bothered right now.
-function getQuadrantPath(chunkIndex: number): Array<1 | 2 | 3 | 4> {
-  // @ts-ignore
-  return [
-    [2, 2],
-    [2, 1],
-    [1, 2],
-    [1, 1],
-    [2, 3],
-    [2, 4],
-    [1, 3],
-    [1, 4],
-    [3, 2],
-    [3, 1],
-    [4, 2],
-    [4, 1],
-    [3, 3],
-    [3, 4],
-    [4, 3],
-    [4, 4],
-  ][chunkIndex];
+function chunkIndexToQuadrantPath(chunkIndex: number, chunkLevels: number = 3) {
+  const chunksPerSide = 2 ** chunkLevels;
+  const gridPos = [
+    Math.floor(chunkIndex % chunksPerSide),
+    Math.floor(chunkIndex / chunksPerSide),
+  ];
+  const path = [];
+  let midPoints = {
+    x: chunksPerSide / 2,
+    y: chunksPerSide / 2
+  }
+  const transformations = {
+    left: {
+      midPointShift: -1,
+      up: {
+        quadrant: 2,
+        midPointShift: -1
+      },
+      down: {
+        quadrant: 3,
+        midPointShift: 1
+      },
+    },
+    right: {
+      midPointShift: 1,
+      up: {
+        quadrant: 1,
+        midPointShift: -1
+      },
+      down: {
+        quadrant: 4,
+        midPointShift: 1
+      },
+    }
+  }
+  let shiftMagnitude = chunksPerSide / 4
+  for (let i = 0; i < chunkLevels; i++) {
+    const xDirection = gridPos[0] < midPoints.x ? "left" : "right"
+    const yDirection = gridPos[1] < midPoints.y ? "up" : "down"
+    const transformation = transformations[xDirection][yDirection]
+    path.push(transformation.quadrant)
+    midPoints.x += transformations[xDirection].midPointShift * shiftMagnitude
+    midPoints.y += transformation.midPointShift * shiftMagnitude
+    shiftMagnitude /= 2
+  }
+  return path;
 }
