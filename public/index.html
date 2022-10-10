@@ -2,21 +2,32 @@
 <html>
   <head>
     <title>Terrainosaurus Demo</title>
-    <link rel="icon" type="image/x-icon" href="./assets/images/icon.svg">
+    <link rel="icon" type="image/x-icon" href="./assets/images/icon.svg" />
     <script src="./assets/scripts/bundle.js"></script>
     <script src="https://mwbeene.github.io/aframe-cursor-teleport/dist/aframe-cursor-teleport-component.min.js"></script>
     <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
   </head>
   <body>
-    <a-scene fog="type: exponential; color: #AAA; density: 0.02;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: true; physicallyCorrectLights: true;">
+    <a-scene
+      fog="type: exponential; color: #AAA; density: 0.02;"
+      renderer="maxCanvasWidth: 640; maxCanvasHeight: 640; antialias: true; physicallyCorrectLights: true;"
+    >
       <a-assets>
-        <img id="displacementMap" src="./assets/images/displacement.jpg" crossorigin="anonymous" />
-        <img id="grassTexture" src="./assets/images/rock.jpg" crossorigin="anonymous" />
+        <img
+          id="displacementMap"
+          src="./assets/images/displacement.jpg"
+          crossorigin="anonymous"
+        />
+        <img
+          id="grassTexture"
+          src="./assets/images/rock.jpg"
+          crossorigin="anonymous"
+        />
       </a-assets>
-      <a-entity light="type: ambient; color: #FFF; intensity: 0.2;"></a-entity>
+      <a-entity light="type: ambient; color: #FFF; intensity: 1.5;"></a-entity>
       <a-entity
-        light="type: directional; color: #FFF; intensity: 10"
+        light="type: directional; color: #FFF; intensity: 2.5"
         position="-2 1 1"
       >
       </a-entity>
@@ -25,7 +36,8 @@
         position="0 0 0"
         scale="6 6 6"
         material="shader: standard; side: double; wireframe: false;"
-        >
+      >
+        <a-sphere radius="0.9" position="0 0 0" material="transparent: true; opacity: 0.4;" color="blue"></a-sphere>
       </a-entity>
       <a-entity
         id="cameraRig"
@@ -35,29 +47,36 @@
           cameraHead: #head;
           collisionEntities: .terrainosaurus-chunk;
           ignoreEntities: .clickable"
-        position="0 50 30"
+        position="0 0 10"
         movement-controls="controls: keyboard; constrainToNavMesh: true"
       >
-        <a-entity camera
-          id="head"
-          look-controls="pointerLockEnabled: false"
-        >
+        <a-entity camera id="head" look-controls="pointerLockEnabled: false">
         </a-entity>
-        <a-entity cursor="fuse: false; rayOrigin: mouse"
+        <a-entity
+          cursor="fuse: false; rayOrigin: mouse"
           position="0 1.2 0"
           raycaster="objects: .terrainosaurus-chunk;"
           teleport-controls="
             cameraRig: #cameraRig;
             teleportOrigin: #head;
-            curveShootingSpeed: 8;">
+            curveShootingSpeed: 8;"
+        >
+        </a-entity>
       </a-entity>
       <a-sky color="#aae" material="fog: false;"></a-sky>
     </a-scene>
     <script>
-      document.querySelector("#terrain")?.setAttribute("terrainosaurus-terrain", { seed: 123, cameraHeight: 1.5, })
-      document.querySelector("[cursor-teleport")?.setAttribute("cursor-teleport", {
-        collisionEntities: ".terrainosaurus-chunk"
-      })
+      document
+        .querySelector("#terrain")
+        ?.setAttribute("terrainosaurus-terrain", {
+          seed: 123,
+          cameraHeight: 1.5,
+        });
+      document
+        .querySelector("[cursor-teleport")
+        ?.setAttribute("cursor-teleport", {
+          collisionEntities: ".terrainosaurus-chunk",
+        });
     </script>
   </body>
 </html>

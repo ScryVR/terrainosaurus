@@ -1,8 +1,11 @@
-import { Vector3} from 'three'
+import { Vector3 } from "three";
 import { IVertex } from "./interfaces";
 
-export function defaultGeneratorSelector() {
-  return Math.floor(Math.random() * this.generators.length)
+export function defaultGeneratorSelector(props: any) {
+  if (this.state.isDigging) {
+    return 1; // Hole digger
+  }
+  return 0; // Diamond-square displacer
 }
 
 export interface IPoint {
@@ -18,79 +21,93 @@ export interface ICorners {
   bottomRight: IVertex;
 }
 
-
 export const defaultGenerators: Array<(...args: any) => any> = [
-  (vertices, randomValues) => {
+  function (vertices, randomValues) {
     const VERTEX_INDICES = {
       CENTER: [0, 7, 10, 14, 15, 23],
       TOP_MIDDLE: [2, 3, 11],
       BOTTOM_MIDDLE: [12, 19, 22],
       LEFT_MIDDLE: [1, 4, 17],
-      RIGHT_MIDDLE: [6, 20, 21]
+      RIGHT_MIDDLE: [6, 20, 21],
+    };
+    const squareSize = vertices[1].pos[0] - vertices[0].pos[0];
+    Object.values(VERTEX_INDICES).forEach((indices) => {
+      const displacement =
+        (randomValues[indices[0]] * squareSize) /
+        Math.pow(vertices[0].recursions + 1, 0.7);
+      indices.forEach((index) => (vertices[index].pos[1] += displacement * 0));
+    });
+    return vertices;
+  },
+  function (vertices, randomValues) {
+    if (
+      this.state.center &&
+      !(this.state.center instanceof this.THREE.Vector3)
+    ) {
+      this.state.center = new this.THREE.Vector3(
+        this.state.center[0],
+        this.state.center[1],
+        this.state.center[2]
+      );
+      return;
     }
-    const squareSize = (vertices[1].pos[0] - vertices[0].pos[0])
-    Object.values(VERTEX_INDICES).forEach(indices => {
-      const displacement = randomValues[indices[0]] * squareSize / Math.pow(vertices[0].recursions + 1, 0.7)
-      indices.forEach(index => vertices[index].pos[1] += displacement)
-    })
-    return vertices
-    // const topLeftSquare = vertices.slice(0, 3)
-    // const [
-    //   center,
-    //   leftMiddle,
-    //   topMiddle,
-    // ] = topLeftSquare.pos
-    // const bottomRightSquare = vertices.slice(vertices.length - 3, vertices.length)
-    // const [
-    //   _,
-    //   bottomMiddle,
-    //   rightMiddle
-    // ] = bottomRightSquare.pos
+    const point = new this.THREE.Vector3();
+    const { center, radius } = this.state;
+    vertices.forEach((v: IVertex) => {
+      point.set(v.pos[0], v.pos[1], v.pos[2]);
+      if (point.distanceTo(center) <= radius) {
+        const xDisplacement = Math.sqrt(
+          Math.abs(
+            radius ** 2 -
+              (v.pos[1] - center.y) ** 2 -
+              (v.pos[2] - center.z) ** 2
+          )
+        );
+        const yDisplacement = Math.sqrt(
+          Math.abs(
+            radius ** 2 -
+              (v.pos[0] - center.x) ** 2 -
+              (v.pos[2] - center.z) ** 2
+          )
+        );
+        const zDisplacement = Math.sqrt(
+          Math.abs(
+            radius ** 2 -
+              (v.pos[0] - center.x) ** 2 -
+              (v.pos[1] - center.y) ** 2
+          )
+        );
+        const centerModifiable = new this.THREE.Vector3(
+          center.x - xDisplacement,
+          center.y - yDisplacement,
+          center.z - zDisplacement
+        );
+        point.sub(centerModifiable);
+        centerModifiable.normalize().multiplyScalar(radius);
+        
+        // if (v.pos[0] < center.x) {
+        //   v.pos[0] -= point.x;
+        // } else {
+        //   v.pos[0] += point.x;
+        // }
 
-    // const displacement = randomNumber * (corners.topRight.pos[0] - corners.topLeft.pos[0]) / (corners.topRight.recursions + 1)
-    // return {
-    //   x: center.x,
-    //   y: center.y + displacement,
-    //   z: center.z
-    // }
-  }
-]
+        // if (v.pos[1] < center.y) {
+          v.pos[1] -= point.y;
+        // } else {
+        //   v.pos[1] += point.y;
+        // }
 
-export function orthogonalDisplacer (center: IPoint, corners: ICorners, randomNumber: number) {
-  const VERTEX_INDICES = {
-    CENTER: [0, 7, 10, 14, 15, 23],
-    TOP_MIDDLE: [2, 3, 11],
-    BOTTOM_MIDDLE: [12, 19, 22],
-    LEFT_MIDDLE: [1, 4, 17],
-    RIGHT_MIDDLE: [6, 20, 21]
-  }
-  let normalVector = new this.THREE.Vector3()
-  let crossVector = new this.THREE.Vector3()
-  /**
-   * Compute normal vector by taking the cross product of the 
-   * vectors from the center to the bottom right corner and the top right corner.
-   * Modify the magnitude of this vector randomly.
-   **/
-  normalVector.set(
-    corners.bottomRight.pos[0] - center.x,
-    corners.bottomRight.pos[1] - center.y, 
-    corners.bottomRight.pos[2] - center.z
-  )
-  crossVector.set(
-    corners.topRight.pos[0] - center.x,
-    corners.topRight.pos[1] - center.y, 
-    corners.topRight.pos[2] - center.z
-  )
-  normalVector.cross(crossVector).normalize()
-  
-  const scalingFactor = Math.abs(randomNumber * (corners.topRight.pos[0] - corners.topLeft.pos[0]) / (corners.topLeft.recursions + 1))
+        // if (v.pos[2] < center.z) {
+        //   v.pos[2] -= point.z;
+        // } else {
+        //   v.pos[2] += point.z;
+        // }
 
-  normalVector.multiplyScalar(scalingFactor)
-  
-  return {
-    x: center.x + normalVector.x,
-    y: center.y + normalVector.y,
-    z: center.z + normalVector.z
-  }
-}
- 
+        v.color = [0.8, 0.2, 0.2];
+      } else {
+        v.color = [0.4, 0.8, 0.2];
+      }
+    });
+    return vertices;
+  },
+];

@@ -7,6 +7,7 @@ const VERTICES_PER_SQUARE = 6;
 self.addEventListener("message", ({ data }) => {
     if (data.action === "recurseSection") {
         const context = {
+            state: data.state || {},
             vertices: data.section.vertices,
             generators: data.generators.map((f) => reconstructFunction(f)),
             generatorSelector: reconstructFunction(data.generatorSelector),
@@ -24,14 +25,20 @@ self.addEventListener("message", ({ data }) => {
     }
 });
 function reconstructFunction(functionString) {
-    functionString = functionString.replace(/\S*__WEBPACK_IMPORTED_MODULE_\d+__./g, "");
-    let functionCode = functionString.split("\n");
-    functionCode.pop();
-    let functionSignature = functionCode.shift();
-    functionCode = functionCode.join("\n");
-    let args = functionSignature.match(/\([^)]*\)/)[0];
-    args = args.replace("(", "").replace(")", "").split(",");
-    return Function(...args, functionCode);
+    try {
+        functionString = functionString.replace(/\S*__WEBPACK_IMPORTED_MODULE_\d+__./g, "");
+        let functionCode = functionString.split("\n");
+        functionCode.pop();
+        let functionSignature = functionCode.shift();
+        functionCode = functionCode.join("\n");
+        let args = functionSignature.match(/\([^)]*\)/)[0];
+        args = args.replace("(", "").replace(")", "").split(",");
+        return Function(...args, functionCode);
+    }
+    catch (err) {
+        console.error("Failure while reconstructing function", functionString);
+        throw err;
+    }
 }
 // TODO: Fix code duplication with Terrainosaurus by importing these functions from a single place
 function recurseSection({ vertices, absoluteIndex }, levels = 1) {
@@ -73,22 +80,6 @@ function getSubSquares(props) {
         p3: topRight,
         p4: topLeft,
     });
-    // const generator =
-    //   this.generators[
-    //     this.generatorSelector({
-    //       topLeft,
-    //       topRight,
-    //       bottomLeft,
-    //       bottomRight,
-    //       vertexIndex: props.vertexIndex,
-    //     })
-    //   ];
-    // center = generator.call(this, center, {
-    //   topLeft,
-    //   topRight,
-    //   bottomLeft,
-    //   bottomRight,
-    // }, simplex.noise2D(center.x + 10, center.z + 10)); // Offset since simplex noise is always 0 at 0, 0
     const baseVertex = vertexGenerator(recursions);
     const newVertices = [
         // Top left square
@@ -180,14 +171,8 @@ function getSubSquares(props) {
         },
         { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
     ];
-    const generator = this.generators[this.generatorSelector({
-        topLeft,
-        topRight,
-        bottomLeft,
-        bottomRight,
-        vertexIndex: props.vertexIndex,
-    })];
-    center = generator.call(this, newVertices, newVertices.map(v => simplex.noise2D(v.pos[0], v.pos[2])));
+    const generator = this.generators[this.generatorSelector.call(this)];
+    center = generator.call(this, newVertices, newVertices.map(v => simplex.noise2D(v.pos[0] + 10, v.pos[2] + 10)));
     return newVertices;
 }
 function bilinearInterpolation(props) {

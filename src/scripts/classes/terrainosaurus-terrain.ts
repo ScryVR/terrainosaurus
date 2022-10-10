@@ -76,7 +76,15 @@ export function registerTerrainosaurusComponent(
           2
         )
         .then(() => {
-          this.updateChunkGeometries();
+          this.updateChunkGeometries()
+          // terrainClient.digSphere(new Vector3(0, 1, 0), 3)
+          // terrainClient.digSphere(new Vector3(0, 0, 0), 3)
+          // terrainClient.digSphere(new Vector3(0, -1, 0), 3)
+          terrainClient.digSphere([0, 0, 0], 1).then(() => {
+            this.updateChunkGeometries()
+          })
+          // terrainClient.digSphere(new Vector3(0, -3, 0), 3)
+          // terrainClient.digSphere(new Vector3(0, -4, 0), 3)
           // terrainClient
           //   .recurseSectionInBackground(
           //     { vertices: terrainClient.vertices, absoluteIndex: 0 },
@@ -136,7 +144,7 @@ export function registerTerrainosaurusComponent(
       terrainClient: Terrainosaurus,
       path: Array<1 | 2 | 3 | 4>
     ) {
-      const name = `terrainosaurus-${Math.floor(Math.random() * 100000)}`;
+      const name = `terrainosaurus-${getRandomId()}`;
       registerGeometry(name, {
         init() {
           const geometry = terrainClient.createGeometry(

@@ -1,4 +1,8 @@
-import { BufferGeometry, Float32BufferAttribute, Vector3, Vector2 } from "three";
+import {
+  BufferGeometry,
+  Float32BufferAttribute,
+  Vector3,
+} from "three";
 import { defaultGenerators, defaultGeneratorSelector } from "./generators";
 // @ts-ignore
 import { SimplexNoise } from "simplex-noise-esm";
@@ -102,6 +106,7 @@ export class Terrainosaurus {
       vertexWorker.postMessage({
         action: "recurseSection",
         seed: this.seed,
+        state: this.state,
         section: { vertices: section.vertices, absoluteIndex: 0 },
         generatorSelector: this.generatorSelector.toString(),
         generators: this.generators.map((gen) => gen.toString()),
@@ -310,24 +315,26 @@ export class Terrainosaurus {
 
     const generator =
       this.generators[
-        this.generatorSelector({
-          topLeft,
-          topRight,
-          bottomLeft,
-          bottomRight,
-          vertexIndex: props.vertexIndex,
-        })
+        this.generatorSelector.call(this)
       ];
     generator.call(
       this,
       newVertices,
       newVertices.map((v: any) =>
-        this.state.simplex.noise2D(v.pos[0], v.pos[2])
+        this.state.simplex.noise2D(v.pos[0] + 10, v.pos[2] + 10)
       )
     );
     return newVertices;
   }
-    
+
+  async digSphere(center: Array<number> = [0, 0, 0], radius: number = 2, vertices: Array<IVertex> = this.vertices) {
+    // Set properties that get used by the hole digger generator and generator selector
+    this.state.isDigging = true
+    this.state.center = center
+    this.state.radius = radius
+    return await this.recurseSectionInBackground({ vertices, absoluteIndex: 0 }, 1)
+  }
+
   createGeometry(section: Array<IVertex> = this.vertices) {
     // When called, generates a BufferGeometry out of the current vertices
     const geometry = new BufferGeometry();
@@ -341,48 +348,20 @@ export class Terrainosaurus {
         acc.positions = acc.positions.concat(vertex.pos);
         acc.normals = acc.normals.concat(vertex.norm);
         acc.uvs = acc.uvs.concat(vertex.uv);
-        if (vertex.pos[1] > 3) {
+        if (vertex.color) {
+          acc.colors = acc.colors.concat(vertex.color);
+        } else if (vertex.pos[1] > 3) {
           acc.colors = acc.colors.concat(0.6, 0.6, 0.6);
         } else if (vertex.pos[1] < 1.2) {
           acc.colors = acc.colors.concat(0.8, 0.7, 0.5);
         } else {
           acc.colors = acc.colors.concat(0.5, 0.9, 0.5);
         }
-          acc.colors = acc.colors.concat(vertex.color);
         return acc;
       },
       { positions: [], normals: [], uvs: [], colors: [] }
     );
 
-      const center = new Vector3(0,0,0);
-      const radius = 4;
-      for(let i = 0; i < positions.length; i+=3) {
-          
-          // positions[i+1] = 0;
-
-          const pointPos = new Vector3(positions[i], positions[i+1], positions[i+2])
-
-          if(Math.abs(pointPos.distanceTo(center)) < radius && center.y >= positions[i + 1]) {
-              const squaredDistance = radius**2 - (positions[i] - center.x)**2 - (positions[i + 2] - center.z)**2
-              let yDisplacement = Math.sqrt(Math.abs(radius**2 - (positions[i]-center.x)**2 - (positions[i+2]-center.z)**2));
-              
-              const centerModifiable = new Vector3(center.x ,center.y - yDisplacement,center.z);
-              centerModifiable.add(pointPos)
-              centerModifiable.normalize().multiplyScalar(radius);
-              if (centerModifiable.y) {
-                positions[i] = centerModifiable.x;
-                positions[i+1] = centerModifiable.y;
-                positions[i+2] = centerModifiable.z;
-              }
-              colors[i] = 1
-              colors[i+1] = 0
-              colors[i+2] = 0
-          } else {
-              colors[i] = 0
-              colors[i+1] = 1
-              colors[i+2] = 0
-          }
-      }
     // Use parallel arrays to create BufferGeometry
     geometry.setAttribute(
       "position",
