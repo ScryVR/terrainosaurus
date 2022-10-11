@@ -17,6 +17,9 @@ export interface ICorners {
   bottomRight: IVertex;
 }
 
+type Color = "GRASS" | "DIRT" | "STONE"
+type ColorArray = Array<Color>
+
 
 export const defaultGenerators: Array<(...args: any) => any> = [
   function (vertices, randomValues) {
@@ -32,7 +35,7 @@ export const defaultGenerators: Array<(...args: any) => any> = [
       BOTTOM_LEFT: [13, 16]
     }
     // Wave Function Collapse Stuff (coloring)
-    const TERRAIN_NAMES = ["GRASS", "DIRT", "STONE"]
+    const TERRAIN_NAMES: Array<Color> = ["GRASS", "DIRT", "STONE"]
     const COLORS = {
       GRASS: [0.4, 0.8, 0.3],
       DIRT: [0.8, 0.4, 0.3],
@@ -53,13 +56,14 @@ export const defaultGenerators: Array<(...args: any) => any> = [
     })
     // This isn't real wave function collapse for now.
     // It just has a chance of grouping colors
-    
     // Set center color based on neighbors
     const stepSize = (vertices[0].pos[0] - vertices[1].pos[0])
     vertices.forEach((vertex: IVertex) => {
-      const color = chooseColor.call(this, vertex.pos[0], vertex.pos[2], stepSize)
-      // @ts-ignore
-      vertex.color = COLORS[color]
+      if (!vertex.color) {
+        const color = chooseColor.call(this, vertex.pos[0], vertex.pos[2], stepSize)
+        // @ts-ignore
+        vertex.color = COLORS[color]
+      }
     })
 
     // Displacement stuff
@@ -75,31 +79,31 @@ export const defaultGenerators: Array<(...args: any) => any> = [
     return vertices
 
     function chooseColor(x: number, z: number, stepSize: number) {
-      let neighborColors = getNeighbors(x, z, stepSize)
+      let neighborColors = getNeighbors.call(this, x, z, stepSize)
       if (!neighborColors.length) {
         neighborColors = TERRAIN_NAMES
       }
       // Select which neighbor colors are relevant
       let flattenedColors = []
-      if (Math.random() < 0.9 && neighborColors.some(c => c.length === 1)) {
-        flattenedColors = neighborColors.filter(c => c.length === 1).reduce((acc, arr) => {
-          acc = acc.concat(arr)
-          return acc
-        }, [])
+      if (neighborColors.some((c: ColorArray) => c.length === 1)) {
+        flattenedColors = neighborColors.find((c: ColorArray) => c.length === 1)
+        // flattenedColors = neighborColors.filter((c: ColorArray) => c.length === 1).reduce((acc: ColorArray, arr: ColorArray) => {
+        //   acc = acc.concat(arr)
+        //   return acc
+        // }, [])
       } else {
-        flattenedColors = neighborColors.reduce((acc, arr) => {
+        flattenedColors = neighborColors.reduce((acc: ColorArray, arr: ColorArray) => {
           acc = acc.concat(arr)
           return acc
         }, [])
       }
       const choice = flattenedColors[Math.floor(Math.random() * flattenedColors.length)]
-      this.waveFunctionState[x][z] = choice
+      this.waveFunctionState[x][z] = [choice]
       // Update all neighbors based on the choice
       for (let i = x - stepSize; i < x + 2 * stepSize; i += stepSize) {
         for (let j = z - stepSize; j < z + 2 * stepSize; j += stepSize) {
           try {
             if (i !== x && j !== z && this.waveFunctionState[i][j]) {
-              console.log("yup...")
               this.waveFunctionState[i][j] = [choice]
             }
           } catch(_) {}
@@ -123,42 +127,3 @@ export const defaultGenerators: Array<(...args: any) => any> = [
     }
   }
 ]
-
-export function orthogonalDisplacer (center: IPoint, corners: ICorners, randomNumber: number) {
-  const VERTEX_INDICES = {
-    CENTER: [0, 7, 10, 14, 15, 23],
-    TOP_MIDDLE: [2, 3, 11],
-    BOTTOM_MIDDLE: [12, 19, 22],
-    LEFT_MIDDLE: [1, 4, 17],
-    RIGHT_MIDDLE: [6, 20, 21]
-  }
-  let normalVector = new this.THREE.Vector3()
-  let crossVector = new this.THREE.Vector3()
-  /**
-   * Compute normal vector by taking the cross product of the 
-   * vectors from the center to the bottom right corner and the top right corner.
-   * Modify the magnitude of this vector randomly.
-   **/
-  normalVector.set(
-    corners.bottomRight.pos[0] - center.x,
-    corners.bottomRight.pos[1] - center.y, 
-    corners.bottomRight.pos[2] - center.z
-  )
-  crossVector.set(
-    corners.topRight.pos[0] - center.x,
-    corners.topRight.pos[1] - center.y, 
-    corners.topRight.pos[2] - center.z
-  )
-  normalVector.cross(crossVector).normalize()
-  
-  const scalingFactor = Math.abs(randomNumber * (corners.topRight.pos[0] - corners.topLeft.pos[0]) / (corners.topLeft.recursions + 1))
-
-  normalVector.multiplyScalar(scalingFactor)
-  
-  return {
-    x: center.x + normalVector.x,
-    y: center.y + normalVector.y,
-    z: center.z + normalVector.z
-  }
-}
- 
