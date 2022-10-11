@@ -35,7 +35,7 @@ export const defaultGenerators: Array<(...args: any) => any> = [
       BOTTOM_LEFT: [13, 16]
     }
     // Wave Function Collapse Stuff (coloring)
-    const TERRAIN_NAMES: Array<Color> = ["GRASS", "DIRT", "STONE"]
+    const TERRAIN_NAMES: Array<Color> = ["GRASS", "DIRT", "STONE", "STONE", "STONE"]
     const COLORS = {
       GRASS: [0.4, 0.8, 0.3],
       DIRT: [0.8, 0.4, 0.3],
@@ -86,18 +86,19 @@ export const defaultGenerators: Array<(...args: any) => any> = [
       // Select which neighbor colors are relevant
       let flattenedColors = []
       if (neighborColors.some((c: ColorArray) => c.length === 1)) {
-        flattenedColors = neighborColors.find((c: ColorArray) => c.length === 1)
-        // flattenedColors = neighborColors.filter((c: ColorArray) => c.length === 1).reduce((acc: ColorArray, arr: ColorArray) => {
-        //   acc = acc.concat(arr)
-        //   return acc
-        // }, [])
+        // flattenedColors = neighborColors.find((c: ColorArray) => c.length === 1)
+        flattenedColors = neighborColors.filter((c: ColorArray) => c.length === 1).reduce((acc: ColorArray, arr: ColorArray) => {
+          acc = acc.concat(arr)
+          return acc
+        }, [])
       } else {
         flattenedColors = neighborColors.reduce((acc: ColorArray, arr: ColorArray) => {
           acc = acc.concat(arr)
           return acc
         }, [])
       }
-      const choice = flattenedColors[Math.floor(Math.random() * flattenedColors.length)]
+      const choices = getWaveFunction(flattenedColors)
+      const choice = choices[Math.floor(Math.random() * choices.length)]
       this.waveFunctionState[x][z] = [choice]
       // Update all neighbors based on the choice
       for (let i = x - stepSize; i < x + 2 * stepSize; i += stepSize) {
@@ -124,6 +125,15 @@ export const defaultGenerators: Array<(...args: any) => any> = [
         }
       }
       return neighbors
+    }
+
+    function getWaveFunction(flattenedNeighborValues: ColorArray) {
+      // Should return a list of potential color values based on a list of other colors.
+      // If/When rollback is supported, this function will throw an error if there are no valid choices.
+      if (flattenedNeighborValues.includes("GRASS")) {
+        return ["GRASS"]
+      }
+      return flattenedNeighborValues
     }
   }
 ]
