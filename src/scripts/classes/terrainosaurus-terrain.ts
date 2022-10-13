@@ -54,7 +54,6 @@ export function registerTerrainosaurusComponent(
         this.chunks[i].classList.add("terrainosaurus-chunk");
         this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
         if (this.data.src) {
-          console.log("We have a src", this.data.src)
           this.chunks[i].setAttribute("material", {
             side: "double",
             src: this.data.src,
@@ -62,7 +61,6 @@ export function registerTerrainosaurusComponent(
             roughness: 1
           });
         } else {
-          console.log("no src", this.data)
           this.chunks[i].setAttribute("material", {
             side: "double",
             vertexColors: "vertex",
@@ -92,6 +90,12 @@ export function registerTerrainosaurusComponent(
       // Set up stuff for terrain navigation
       this.camera = document.querySelector("[camera]");
       this.cameraWorldPosition = new Vector3();
+      this.camera.object3D.getWorldPosition(this.cameraWorldPosition);
+      this.nominalCameraHeight = this.cameraWorldPosition.y
+
+      this.cameraRig = document.querySelector("#cameraRig")
+      this.cameraRigWorldPosition = new Vector3()
+
       this.UP_VECTOR = new Vector3(0, 1, 0);
       this.DOWN_VECTOR = new Vector3(0, -1, 0);
       this.intersections = [];
@@ -113,7 +117,7 @@ export function registerTerrainosaurusComponent(
     },
     tick() {
       this.camera.object3D.getWorldPosition(this.cameraWorldPosition);
-      this.cameraWorldPosition.y += 1;
+      this.cameraRig.object3D.getWorldPosition(this.cameraRigWorldPosition)
       this.raycaster.set(this.cameraWorldPosition, this.DOWN_VECTOR);
       this.raycaster.intersectObject(
         this.displacementTarget.object3D,
@@ -156,8 +160,9 @@ export function registerTerrainosaurusComponent(
         // Basic PD control - not a proper physics sim with gravity
         // TODO: Consider how to handle IRL changes in elevation when in AR mode.
         const yGround = this.intersections[0].point.y;
-        const yCamera = this.cameraWorldPosition.y;
-        const controlInput = 0.4 * (yGround - yCamera + 1 + this.data.cameraHeight);
+        const yRig = this.cameraRigWorldPosition.y
+        // Use the nominal camera height because AR mode is a sneaky little guy (I want to be able to get low to look closely at the ground)
+        const controlInput = 0.4 * (yGround - (yRig) + this.data.cameraHeight);
 
         // Note that we shift the ground, not camera. This makes AR mode work better
         this.displacementTarget.object3D.position.y =
