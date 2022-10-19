@@ -142,7 +142,7 @@ export function registerTerrainosaurusComponent(
       terrainClient: Terrainosaurus,
       path: Array<1 | 2 | 3 | 4>
     ) {
-      const name = `terrainosaurus-${Math.floor(Math.random() * 100000)}`;
+      const name = `terrainosaurus-${getRandomId()}`;
       registerGeometry(name, {
         init() {
           const geometry = terrainClient.createGeometry(
@@ -188,10 +188,10 @@ function addTerrainosaurusObjectToMap(props: ITerrainosaurusProps) {
   return randomId;
 }
 
-// Returns a random 8-digit number.
-// Using Math.random() should be fine since this isn't a cryptographically-sensitive use case.
 function getRandomId() {
-  return Math.floor(1 + Math.random() * 10000000).toString();
+  const typedArray = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+  crypto.getRandomValues(typedArray)
+  return typedArray.join("")
 }
 
 // There should be a way to reduce this to a single expression, but I can't be bothered right now.
