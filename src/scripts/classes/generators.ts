@@ -1,4 +1,3 @@
-import { Vector3} from 'three'
 import { IVertex } from "./interfaces";
 
 export function defaultGeneratorSelector() {
@@ -18,79 +17,123 @@ export interface ICorners {
   bottomRight: IVertex;
 }
 
+type Color = "GRASS" | "DIRT" | "STONE"
+type ColorArray = Array<Color>
+
 
 export const defaultGenerators: Array<(...args: any) => any> = [
-  (vertices, randomValues) => {
+  function (vertices, randomValues) {
     const VERTEX_INDICES = {
       CENTER: [0, 7, 10, 14, 15, 23],
       TOP_MIDDLE: [2, 3, 11],
       BOTTOM_MIDDLE: [12, 19, 22],
       LEFT_MIDDLE: [1, 4, 17],
-      RIGHT_MIDDLE: [6, 20, 21]
+      RIGHT_MIDDLE: [6, 20, 21],
+      TOP_RIGHT: [8, 9],
+      TOP_LEFT: [5],
+      BOTTOM_RIGHT: [18],
+      BOTTOM_LEFT: [13, 16]
     }
+    // Wave Function Collapse Stuff (coloring)
+    const TERRAIN_NAMES: Array<Color> = ["GRASS", "DIRT", "STONE", "STONE", "STONE"]
+    const COLORS = {
+      GRASS: [0.4, 0.8, 0.3],
+      DIRT: [0.8, 0.4, 0.3],
+      STONE: [0.6, 0.6, 0.6]
+    }
+    if (!this.waveFunctionState) {
+      this.waveFunctionState = {}
+    }
+    // Add new cells to the wave function state as needed
+    vertices.forEach((v: IVertex) => {
+      if (!this.waveFunctionState[v.pos[0]]) {
+        this.waveFunctionState[v.pos[0]] = {}
+      }
+      if (!this.waveFunctionState[v.pos[0]][v.pos[2]]) {
+        let initialValue = TERRAIN_NAMES
+        this.waveFunctionState[v.pos[0]][v.pos[2]] = initialValue
+      }
+    })
+    // This isn't real wave function collapse for now.
+    // It just has a chance of grouping colors
+    // Set center color based on neighbors
+    const stepSize = (vertices[0].pos[0] - vertices[1].pos[0])
+    vertices.forEach((vertex: IVertex) => {
+      if (!vertex.color) {
+        const color = chooseColor.call(this, vertex.pos[0], vertex.pos[2], stepSize)
+        // @ts-ignore
+        vertex.color = COLORS[color]
+      }
+    })
+
+    // Displacement stuff
     const squareSize = (vertices[1].pos[0] - vertices[0].pos[0])
-    Object.values(VERTEX_INDICES).forEach(indices => {
-      const displacement = randomValues[indices[0]] * squareSize / Math.pow(vertices[0].recursions + 1, 0.7)
-      indices.forEach(index => vertices[index].pos[1] += displacement)
+    Object.entries(VERTEX_INDICES).forEach(([key, indices]) => {
+      if (["CENTER", "TOP_MIDDLE", "BOTTOM_MIDDLE", "LEFT_MIDDLE", "RIGHT_MIDDLE"].includes(key)) {
+        const displacement = randomValues[indices[0]] * squareSize / Math.pow(vertices[0].recursions + 1, 0.7)
+        indices.forEach(index => {
+          vertices[index].pos[1] += displacement
+        })
+      }
     })
     return vertices
-    // const topLeftSquare = vertices.slice(0, 3)
-    // const [
-    //   center,
-    //   leftMiddle,
-    //   topMiddle,
-    // ] = topLeftSquare.pos
-    // const bottomRightSquare = vertices.slice(vertices.length - 3, vertices.length)
-    // const [
-    //   _,
-    //   bottomMiddle,
-    //   rightMiddle
-    // ] = bottomRightSquare.pos
 
-    // const displacement = randomNumber * (corners.topRight.pos[0] - corners.topLeft.pos[0]) / (corners.topRight.recursions + 1)
-    // return {
-    //   x: center.x,
-    //   y: center.y + displacement,
-    //   z: center.z
-    // }
+    function chooseColor(x: number, z: number, stepSize: number) {
+      let neighborColors = getNeighbors.call(this, x, z, stepSize)
+      if (!neighborColors.length) {
+        neighborColors = TERRAIN_NAMES
+      }
+      // Select which neighbor colors are relevant
+      let flattenedColors = []
+      if (neighborColors.some((c: ColorArray) => c.length === 1)) {
+        // flattenedColors = neighborColors.find((c: ColorArray) => c.length === 1)
+        flattenedColors = neighborColors.filter((c: ColorArray) => c.length === 1).reduce((acc: ColorArray, arr: ColorArray) => {
+          acc = acc.concat(arr)
+          return acc
+        }, [])
+      } else {
+        flattenedColors = neighborColors.reduce((acc: ColorArray, arr: ColorArray) => {
+          acc = acc.concat(arr)
+          return acc
+        }, [])
+      }
+      const choices = getWaveFunction(flattenedColors)
+      const choice = choices[Math.floor(Math.random() * choices.length)]
+      this.waveFunctionState[x][z] = [choice]
+      // Update all neighbors based on the choice
+      for (let i = x - stepSize; i < x + 2 * stepSize; i += stepSize) {
+        for (let j = z - stepSize; j < z + 2 * stepSize; j += stepSize) {
+          try {
+            if (i !== x && j !== z && this.waveFunctionState[i][j]) {
+              this.waveFunctionState[i][j] = [choice]
+            }
+          } catch(_) {}
+        }
+      }
+      return choice
+    }
+
+    function getNeighbors(x: number, z: number, stepSize: number) {
+      const neighbors = []
+      for (let i = x - stepSize; i < x + 2 * stepSize; i += stepSize) {
+        for (let j = z - stepSize; j < z + 2 * stepSize; j += stepSize) {
+          try {
+            if (i !== x && j !== z && this.waveFunctionState[i][j]) {
+              neighbors.push(this.waveFunctionState[i][j])
+            }
+          } catch(_) {}
+        }
+      }
+      return neighbors
+    }
+
+    function getWaveFunction(flattenedNeighborValues: ColorArray) {
+      // Should return a list of potential color values based on a list of other colors.
+      // If/When rollback is supported, this function will throw an error if there are no valid choices.
+      if (flattenedNeighborValues.includes("GRASS")) {
+        return ["GRASS"]
+      }
+      return flattenedNeighborValues
+    }
   }
 ]
-
-export function orthogonalDisplacer (center: IPoint, corners: ICorners, randomNumber: number) {
-  const VERTEX_INDICES = {
-    CENTER: [0, 7, 10, 14, 15, 23],
-    TOP_MIDDLE: [2, 3, 11],
-    BOTTOM_MIDDLE: [12, 19, 22],
-    LEFT_MIDDLE: [1, 4, 17],
-    RIGHT_MIDDLE: [6, 20, 21]
-  }
-  let normalVector = new this.THREE.Vector3()
-  let crossVector = new this.THREE.Vector3()
-  /**
-   * Compute normal vector by taking the cross product of the 
-   * vectors from the center to the bottom right corner and the top right corner.
-   * Modify the magnitude of this vector randomly.
-   **/
-  normalVector.set(
-    corners.bottomRight.pos[0] - center.x,
-    corners.bottomRight.pos[1] - center.y, 
-    corners.bottomRight.pos[2] - center.z
-  )
-  crossVector.set(
-    corners.topRight.pos[0] - center.x,
-    corners.topRight.pos[1] - center.y, 
-    corners.topRight.pos[2] - center.z
-  )
-  normalVector.cross(crossVector).normalize()
-  
-  const scalingFactor = Math.abs(randomNumber * (corners.topRight.pos[0] - corners.topLeft.pos[0]) / (corners.topLeft.recursions + 1))
-
-  normalVector.multiplyScalar(scalingFactor)
-  
-  return {
-    x: center.x + normalVector.x,
-    y: center.y + normalVector.y,
-    z: center.z + normalVector.z
-  }
-}
- 

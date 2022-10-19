@@ -37,7 +37,7 @@
           cameraHead: #head;
           collisionEntities: .terrainosaurus-chunk;
           ignoreEntities: .clickable"
-        position="0 50 0"
+        position="0 50 30"
         movement-controls="controls: keyboard; constrainToNavMesh: true"
       >
         <a-entity camera
@@ -57,7 +57,7 @@
       <a-sky color="#aae" material="fog: false;"></a-sky>
     </a-scene>
     <script>
-      document.querySelector("#terrain")?.setAttribute("terrainosaurus-terrain", { seed: Math.random(), src: "#grassTexture", cameraHeight: 1.5, })
+      document.querySelector("#terrain")?.setAttribute("terrainosaurus-terrain", { seed: Math.random(), cameraHeight: 1.5, })
       document.querySelector("[cursor-teleport")?.setAttribute("cursor-teleport", {
         collisionEntities: ".terrainosaurus-chunk"
       })
