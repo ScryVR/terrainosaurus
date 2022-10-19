@@ -27,6 +27,7 @@ export function registerTerrainosaurusComponent(
       destroyClientOnRemoval: { type: "boolean", default: false },
       src: { type: "string" },
       wrapper: { type: "string" },
+      lowDetail: { type: "boolean", default: false },
     },
     init() {
       // Initialize the terrainosaurus client in such a way that the memory-intensive
@@ -69,22 +70,16 @@ export function registerTerrainosaurusComponent(
         }
         this.el.appendChild(this.chunks[i]);
       }
-      terrainClient
-        .recurseSectionInBackground(
-          { vertices: terrainClient.vertices, absoluteIndex: 0 },
-          2
-        )
-        .then(() => {
-          this.updateChunkGeometries();
-          // terrainClient
-          //   .recurseSectionInBackground(
-          //     { vertices: terrainClient.vertices, absoluteIndex: 0 },
-          //     1
-          //   )
-          //   .then(() => {
-          //     this.updateChunkGeometries();
-          //   });
-        });
+      if (!this.data.lowDetail) {
+        terrainClient
+          .recurseSectionInBackground(
+            { vertices: terrainClient.vertices, absoluteIndex: 0 },
+            2
+          )
+          .then(() => {
+            this.updateChunkGeometries();
+          });
+      }
 
       // Set up stuff for terrain navigation
       this.camera = document.querySelector("[camera]");
