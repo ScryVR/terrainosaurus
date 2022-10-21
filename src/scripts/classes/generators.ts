@@ -47,8 +47,9 @@ export const defaultGenerators: Array<(...args: any) => any> = [
       SAND: [1, 0.8, 0.6],
     };
     if (!this.waveFunctionState) {
-      console.log("colors", this.colors)
       this.waveFunctionState = {};
+      console.log("huh", this.waterLevel)
+      this.waterLevel = this.waterLevel || 0
     }
     // Add new cells to the wave function state as needed
     vertices.forEach((v: IVertex, index: number) => {
@@ -58,9 +59,9 @@ export const defaultGenerators: Array<(...args: any) => any> = [
       }
       if (!this.waveFunctionState[v.pos[0]][v.pos[2]]) {
         let initialValue = ["GRASS", "DIRT", "STONE"];
-        if (v.pos[1] < randomValues[index]) {
+        if (v.pos[1] < this.waterLevel + randomValues[index]) {
           initialValue = ["SAND"]
-        } else if (v.pos[1] > 2 + randomValues[index]) {
+        } else if (v.pos[1] > this.waterLevel + 2 + randomValues[index]) {
           initialValue = ["STONE", "STONE", "STONE", "DIRT", "GRASS"]
         }
         this.waveFunctionState[v.pos[0]][v.pos[2]] = initialValue;

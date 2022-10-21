@@ -32,6 +32,7 @@ export function registerTerrainosaurusComponent(
       dirtColor: { type: "vec3", default: new Vector3(0.7, 0.5, 0.3) },
       stoneColor: { type: "vec3", default: new Vector3(0.6, 0.6, 0.6) },
       sandColor: { type: "vec3", default: new Vector3(1, 0.8, 0.6) },
+      waterLevel: { type: "number" }
     },
     init() {
       // Initialize the terrainosaurus client in such a way that the memory-intensive
@@ -46,6 +47,7 @@ export function registerTerrainosaurusComponent(
         },
         size: this.data.size,
         seed: this.data.seed,
+        waterLevel: this.data.waterLevel
       };
       this.terrainosaurusId = addTerrainosaurusObjectToMap(terrainosarusProps);
 

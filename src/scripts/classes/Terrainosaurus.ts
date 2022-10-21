@@ -16,12 +16,11 @@ export class Terrainosaurus {
   size: number;
   seed: string;
   offset: number;
-  lowDetailRecursions: number;
-  highDetailRecursions: number;
   vertices: Array<IVertex>;
   indices: Array<number>;
   state: any;
-  colors?: Record<string, Array<number>>
+  colors?: Record<string, Array<number>>;
+  waterLevel?: number;
   generators: Array<(args: any) => any>;
   generatorSelector: (...args: any) => number;
   vertexWorker?: Worker;
@@ -38,7 +37,8 @@ export class Terrainosaurus {
     this.generators = props.generators || defaultGenerators;
     this.vertexWorkerUrl = props.vertexWorkerUrl;
     this.seed = (props.seed || Math.random()).toString();
-    this.colors = props.colors
+    this.colors = props.colors;
+    this.waterLevel = props.waterLevel;
     this.state.simplex = new SimplexNoise(this.seed);
     this.setInitialVertices(this.offset);
     this.THREE = { Vector3 };
@@ -105,6 +105,7 @@ export class Terrainosaurus {
         action: "recurseSection",
         seed: this.seed,
         colors: this.colors,
+        waterLevel: this.waterLevel,
         section: { vertices: section.vertices, absoluteIndex: 0 },
         generatorSelector: this.generatorSelector.toString(),
         generators: this.generators.map((gen) => gen.toString()),

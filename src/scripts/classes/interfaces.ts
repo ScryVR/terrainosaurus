@@ -8,9 +8,10 @@ export interface IRegisterProps {
 }
 
 export interface ITerrainosaurusProps extends IRegisterProps {
-  colors?: Record<string, Array<number>>
   size: number;
   seed: any;
+  colors?: Record<string, Array<number>>;
+  waterLevel?: number;
 }
 
 export interface ISection {

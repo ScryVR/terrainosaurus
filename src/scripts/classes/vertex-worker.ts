@@ -13,6 +13,7 @@ self.addEventListener("message", ({ data }) => {
   if (data.action === "recurseSection") {
     const context = {
       colors: data.colors,
+      waterLevel: data.waterLevel,
       vertices: data.section.vertices,
       generators: data.generators.map((f: string) => reconstructFunction(f)),
       generatorSelector: reconstructFunction(data.generatorSelector),
