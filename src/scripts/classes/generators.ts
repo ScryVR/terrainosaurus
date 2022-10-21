@@ -34,36 +34,38 @@ export const defaultGenerators: Array<(...args: any) => any> = [
       BOTTOM_LEFT: [13, 16],
     };
     // Wave Function Collapse Stuff (coloring)
-    const TERRAIN_NAMES: Array<Color> = ["GRASS", "STONE", "SAND", "DIRT"];
     const TERRAIN_CONNECTIONS: Record<Color, ColorArray> = {
-      GRASS: ["GRASS", "GRASS", "GRASS", "DIRT", "SAND", "STONE"],
+      GRASS: ["GRASS", "GRASS", "GRASS", "DIRT", "STONE"],
       DIRT: ["DIRT", "DIRT", "DIRT", "GRASS", "STONE", "STONE"],
-      STONE: ["STONE", "STONE", "STONE", "STONE", "STONE", "STONE", "STONE", "DIRT", "GRASS"],
+      STONE: ["STONE", "STONE", "STONE", "STONE", "DIRT", "GRASS", "SAND"],
       SAND: ["SAND", "GRASS", "GRASS", "GRASS", "STONE"],
     };
-    const COLORS = {
+    let COLORS = this.colors || {
       GRASS: [0.4, 0.8, 0.3],
-      DIRT: [0.5, 0.5, 0.3],
+      DIRT: [0.7, 0.5, 0.3],
       STONE: [0.6, 0.6, 0.6],
       SAND: [1, 0.8, 0.6],
     };
     if (!this.waveFunctionState) {
+      console.log("colors", this.colors)
       this.waveFunctionState = {};
     }
     // Add new cells to the wave function state as needed
-    vertices.forEach((v: IVertex) => {
+    vertices.forEach((v: IVertex, index: number) => {
       if (!this.waveFunctionState[v.pos[0]]) {
         this.waveFunctionState[v.pos[0]] = {};
         this.accum = 0
       }
       if (!this.waveFunctionState[v.pos[0]][v.pos[2]]) {
-        let initialValue = v.pos[1] < 1 ? ["SAND"] : ["GRASS", "DIRT", "STONE", "STONE"];
+        let initialValue = ["GRASS", "DIRT", "STONE"];
+        if (v.pos[1] < randomValues[index]) {
+          initialValue = ["SAND"]
+        } else if (v.pos[1] > 2 + randomValues[index]) {
+          initialValue = ["STONE", "STONE", "STONE", "DIRT", "GRASS"]
+        }
         this.waveFunctionState[v.pos[0]][v.pos[2]] = initialValue;
       }
     });
-    // This isn't real wave function collapse for now.
-    // It just has a chance of grouping colors
-    // Set center color based on neighbors
     let stepSize = vertices[0].pos[0] - vertices[1].pos[0];
     vertices.forEach((vertex: IVertex, index: number) => {
       if (!vertex.color) {
@@ -110,34 +112,21 @@ export const defaultGenerators: Array<(...args: any) => any> = [
       randomValue: number
     ) {
       let choice: Color;
-      // const neighborColors = getNeighbors.call(this, x, z, stepSize);
       if (this.waveFunctionState[x][z].length === 1) {
-        // choice = y < 0.2 + randomValue ? "SAND" : this.waveFunctionState[x][z][0];
         choice = this.waveFunctionState[x][z][0]
       } else {
-        // const flattenedColors = neighborColors.reduce(
-        //   (acc: ColorArray, colors: ColorArray) => {
-        //     return acc.concat(colors);
-        //   },
-        //   []
-        // );
-        // const allowedColors = getWaveFunction(flattenedColors);
-        let choices = this.waveFunctionState[x][z] //.filter((c: Color) => allowedColors.includes(c));
+        let choices = this.waveFunctionState[x][z]
         // If the most recent choice is valid, high chance to choose it again
         if (this.mostRecentChoice !== "SAND" && choices.includes(this.mostRecentChoice) && this.accum < randomValue) {
-          this.accum += 0.01
+          this.accum += 0.005
           choice = this.mostRecentChoice
         } else {
           if (this.accum >= randomValue) {
             this.accum = 0
-            console.log("resetti")
           }
           choices = choices.filter((c: Color) => c !== this.mostRecentChoice)
           choice = choices[Math.floor(randomValue * choices.length)];
         }
-        // choice = this.mostRecentChoice !== "SAND" && choices.includes(this.mostRecentChoice)
-        //   ? this.mostRecentChoice
-        //   : choices[Math.floor(randomValue * choices.length)];
         this.waveFunctionState[x][z] = [choice];
         this.mostRecentChoice = choice;
       }
@@ -159,7 +148,7 @@ export const defaultGenerators: Array<(...args: any) => any> = [
       for (let i = x - stepSize; i < x + 2 * stepSize; i += stepSize) {
         for (let j = z - stepSize; j < z + 2 * stepSize; j += stepSize) {
           try {
-            if (i !== x && j !== z && this.waveFunctionState[i][j]) {
+            if (i !== x && j !== z && this.waveFunctionState[i][j]?.length > 1) {
               // At each neighbor, get all neighbor colors and restrict wave function to intersection of current function and what the neighbor allows
               const neighborColors = getNeighbors.call(this, x, z, stepSize)
               neighborColors.concat(newChoice).forEach((colors: ColorArray) => {

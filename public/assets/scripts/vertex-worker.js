@@ -7,6 +7,7 @@ const VERTICES_PER_SQUARE = 6;
 self.addEventListener("message", ({ data }) => {
     if (data.action === "recurseSection") {
         const context = {
+            colors: data.colors,
             vertices: data.section.vertices,
             generators: data.generators.map((f) => reconstructFunction(f)),
             generatorSelector: reconstructFunction(data.generatorSelector),

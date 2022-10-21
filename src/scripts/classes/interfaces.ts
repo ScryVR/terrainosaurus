@@ -1,3 +1,5 @@
+import { Vector3 } from "three";
+
 export interface IRegisterProps {
   generators?: Array<(...args: any) => any>;
   generatorSelector?: (...args: any) => number;
@@ -6,6 +8,7 @@ export interface IRegisterProps {
 }
 
 export interface ITerrainosaurusProps extends IRegisterProps {
+  colors?: Record<string, Array<number>>
   size: number;
   seed: any;
 }

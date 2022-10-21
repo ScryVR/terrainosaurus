@@ -28,12 +28,22 @@ export function registerTerrainosaurusComponent(
       src: { type: "string" },
       wrapper: { type: "string" },
       lowDetail: { type: "boolean", default: false },
+      grassColor: { type: "vec3", default: new Vector3(0.4, 0.8, 0.3) },
+      dirtColor: { type: "vec3", default: new Vector3(0.7, 0.5, 0.3) },
+      stoneColor: { type: "vec3", default: new Vector3(0.6, 0.6, 0.6) },
+      sandColor: { type: "vec3", default: new Vector3(1, 0.8, 0.6) },
     },
     init() {
       // Initialize the terrainosaurus client in such a way that the memory-intensive
       // Terrainosaurus object is not bound directly to the component state.
       const terrainosarusProps = {
         ...props,
+        colors: {
+          GRASS: vectorToNumberArray(this.data.grassColor),
+          DIRT: vectorToNumberArray(this.data.dirtColor),
+          STONE: vectorToNumberArray(this.data.stoneColor),
+          SAND: vectorToNumberArray(this.data.sandColor),
+        },
         size: this.data.size,
         seed: this.data.seed,
       };
@@ -234,4 +244,8 @@ function chunkIndexToQuadrantPath(chunkIndex: number, chunkLevels: number = 3) {
     shiftMagnitude /= 2
   }
   return path;
+}
+
+function vectorToNumberArray(vector: Vector3) {
+  return [vector.x, vector.y, vector.z]
 }

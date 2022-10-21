@@ -21,6 +21,7 @@ export class Terrainosaurus {
   vertices: Array<IVertex>;
   indices: Array<number>;
   state: any;
+  colors?: Record<string, Array<number>>
   generators: Array<(args: any) => any>;
   generatorSelector: (...args: any) => number;
   vertexWorker?: Worker;
@@ -37,6 +38,7 @@ export class Terrainosaurus {
     this.generators = props.generators || defaultGenerators;
     this.vertexWorkerUrl = props.vertexWorkerUrl;
     this.seed = (props.seed || Math.random()).toString();
+    this.colors = props.colors
     this.state.simplex = new SimplexNoise(this.seed);
     this.setInitialVertices(this.offset);
     this.THREE = { Vector3 };
@@ -102,6 +104,7 @@ export class Terrainosaurus {
       vertexWorker.postMessage({
         action: "recurseSection",
         seed: this.seed,
+        colors: this.colors,
         section: { vertices: section.vertices, absoluteIndex: 0 },
         generatorSelector: this.generatorSelector.toString(),
         generators: this.generators.map((gen) => gen.toString()),
