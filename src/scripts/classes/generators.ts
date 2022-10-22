@@ -48,7 +48,6 @@ export const defaultGenerators: Array<(...args: any) => any> = [
     };
     if (!this.waveFunctionState) {
       this.waveFunctionState = {};
-      console.log("huh", this.waterLevel)
       this.waterLevel = this.waterLevel || 0
     }
     // Add new cells to the wave function state as needed

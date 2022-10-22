@@ -168,7 +168,6 @@ export function registerTerrainosaurusComponent(
     handleIntersection() {
       // For now, for performance reasons, assume we'll only have a single plane where collisions shouldn't occur
       if (this.raycasterExclusion?.contains(this.intersections[0]?.object.el)) {
-        console.log("shifty time")
         this.intersections.shift()
       }
       if (this.intersections.length) {
