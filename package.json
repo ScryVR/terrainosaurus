@@ -1,6 +1,6 @@
 {
   "name": "terrainosaurus",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "main": "dist/index.js",
   "license": "MIT",
   "devDependencies": {
@@ -34,7 +34,7 @@
     "build": "cross-env NODE_ENV=production webpack",
     "deploy": "aws --profile personal --recursive s3 cp --acl=public-read ./public s3://bernardo.lol/terrainosaurus",
     "prepublishOnly": "tsc --outDir .build;  mv .build/src/scripts/classes/Terrainosaurus.js ./dist/Terrainosaurus.js; mv .build/src/scripts/classes/generators.js ./dist/generators.js; mv .build/src/scripts/classes/vertex-worker.js ./dist/vertex-worker.js; mv .build/src/scripts/classes/terrainosaurus-terrain.js ./dist/index.js; rm -rf .build; yarn compress",
-    "compress": "for f in dist/*; do uglifyjs -m -c -o \"$f\" -- \"$f\"; done"
+    "compress": "for f in dist/*; do uglifyjs --beautify semicolons=false -m -c -o \"$f\" -- \"$f\"; done"
   },
   "peerDependencies": {
     "aframe": "^1.3.0",
