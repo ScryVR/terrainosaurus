@@ -32,7 +32,8 @@ export function registerTerrainosaurusComponent(
       dirtColor: { type: "vec3", default: new Vector3(0.7, 0.5, 0.3) },
       stoneColor: { type: "vec3", default: new Vector3(0.6, 0.6, 0.6) },
       sandColor: { type: "vec3", default: new Vector3(1, 0.8, 0.6) },
-      waterLevel: { type: "number" }
+      waterLevel: { type: "number" },
+      noCollisionWrapper: { type: "string" }
     },
     init() {
       // Initialize the terrainosaurus client in such a way that the memory-intensive
@@ -120,6 +121,9 @@ export function registerTerrainosaurusComponent(
           );
         }
       }
+      if (this.data.noCollisionWrapper) {
+        this.raycasterExclusion = document.querySelector(this.data.noCollisionWrapper)
+      }
     },
     tick() {
       this.camera.object3D.getWorldPosition(this.cameraWorldPosition);
@@ -162,6 +166,11 @@ export function registerTerrainosaurusComponent(
       return name;
     },
     handleIntersection() {
+      // For now, for performance reasons, assume we'll only have a single plane where collisions shouldn't occur
+      if (this.raycasterExclusion?.contains(this.intersections[0]?.object.el)) {
+        console.log("shifty time")
+        this.intersections.shift()
+      }
       if (this.intersections.length) {
         // Basic PD control - not a proper physics sim with gravity
         // TODO: Consider how to handle IRL changes in elevation when in AR mode.
@@ -173,10 +182,10 @@ export function registerTerrainosaurusComponent(
         // Note that we shift the ground, not camera. This makes AR mode work better
         this.displacementTarget.object3D.position.y =
           this.displacementTarget.object3D.position.y - controlInput;
-
         this.intersections = [];
         return true;
       }
+      this.intersections = [];
       return false;
     },
     // Clean up the Terrainosaurus client if the compnent gets deleted
