@@ -91,10 +91,10 @@ export function registerTerrainosaurusComponent(
           )
           .then(() => {
             this.updateChunkGeometries();
-            this.dispatchEvent("terrainInitialized", { detail: { terrainClient }})
+            this.el.dispatchEvent(new CustomEvent("terrainInitialized", { detail: { terrainClient }}))
           });
       } else {
-        this.dispatchEvent("terrainInitialized", { detail: { terrainClient }})
+        this.el.dispatchEvent(new CustomEvent("terrainInitialized", { detail: { terrainClient }}))
       }
 
       // Set up stuff for terrain navigation
