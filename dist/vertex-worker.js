@@ -9,7 +9,7 @@ let simplex = null;
 const VERTICES_PER_SQUARE = 6;
 
 function reconstructFunction(e) {
-    let s = (e = e.replace(/\S*__WEBPACK_IMPORTED_MODULE_\d+__./g, "")).split("\n");
+    let s = (e = (e = (e = e.replace(/\S*__WEBPACK_IMPORTED_MODULE_\d+__./g, "")).replace("){", "){\n")).replace(/}$/g, "\n}")).split("\n");
     s.pop();
     e = s.shift();
     s = s.join("\n");

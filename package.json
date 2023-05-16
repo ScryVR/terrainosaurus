@@ -1,6 +1,6 @@
 {
   "name": "terrainosaurus",
-  "version": "0.1.16",
+  "version": "0.2.1",
   "main": "dist/index.js",
   "license": "MIT",
   "devDependencies": {
@@ -41,8 +41,8 @@
     "three": "^0.144.0"
   },
   "dependencies": {
-    "aframe": "^1.3.0",
-    "simplex-noise-esm": "^2.5.0-esm.0",
-    "three": "^0.144.0"
+    "arborithm": "^1.0.4",
+    "mafiu": "^1.0.8",
+    "simplex-noise-esm": "^2.5.0-esm.0"
   }
 }

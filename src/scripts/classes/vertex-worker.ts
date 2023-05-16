@@ -36,6 +36,9 @@ function reconstructFunction(functionString: string) {
     /\S*__WEBPACK_IMPORTED_MODULE_\d+__./g,
     ""
   );
+  // Some silliness to account for how webpack makes all functions single-line. Just go with it for now.
+  functionString = functionString.replace("){", "){\n")
+  functionString = functionString.replace(/}$/g, "\n}")
   let functionCode: string[] | string = functionString.split("\n");
   functionCode.pop();
   let functionSignature = functionCode.shift();

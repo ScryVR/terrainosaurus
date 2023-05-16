@@ -76,7 +76,7 @@ export function registerTerrainosaurusComponent(
         } else {
           this.chunks[i].setAttribute("material", {
             side: "double",
-            vertexColors: "vertex",
+            vertexColorsEnabled: true,
             shader: "standard",
             roughness: 1,
           });

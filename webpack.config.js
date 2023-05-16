@@ -15,7 +15,11 @@ module.exports = {
   // Webpack needs to know where to start the bundling process,
   // so we define the main JS and Sass files, both under
   // the './src' directory
-  entry: ['./src/scripts/main.ts', './src/styles/main.scss', './src/scripts/classes/vertex-worker.ts'], // MODIFICATION: Use main.ts instead of main.js
+  // entry: ['./src/scripts/main.ts', './src/styles/main.scss', './src/scripts/classes/vertex-worker.ts'], // MODIFICATION: Use main.ts instead of main.js
+  entry: {
+    bundle: ["./src/scripts/main.ts", "./src/styles/main.scss"],
+    // "vertex-worker": ["./node_modules/terrainosaurus/dist/vertex-worker.js"]
+  },
   // This is where we define the path where Webpack will place
   // the bundled JS file
   output: {

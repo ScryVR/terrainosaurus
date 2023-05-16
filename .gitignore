@@ -1,3 +1,5 @@
 node_modules
 index.js
 generators.js
+yarn-error.log
+public/assets/scripts/bundle.js.LICENSE.txt

@@ -1,5 +1,6 @@
 import * as AFRAME from 'aframe'
 import { registerTerrainosaurusComponent } from "./classes/terrainosaurus-terrain";
+// @ts-ignore
 import { Arborithm } from "arborithm"
 
 const workerUrl = new URL("./classes/vertex-worker", import.meta.url)
@@ -19,7 +20,7 @@ window.addEventListener("message", ({data}) => {
         waterLevel: 0
       })
       const wrapper = document.querySelector("#wrapper")
-      arborithm.trees.forEach((treeData) => {
+      arborithm.trees.forEach((treeData: any) => {
         arborithm.spawnTree(wrapper, treeData, [6, 6, 6])
       })
     })
