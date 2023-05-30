@@ -4,14 +4,11 @@
     <title>Terrainosaurus Demo</title>
     <link rel="icon" type="image/x-icon" href="./assets/images/icon.svg">
     <script src="./assets/scripts/bundle.js"></script>
-    <script src="https://mwbeene.github.io/aframe-cursor-teleport/dist/aframe-cursor-teleport-component.min.js"></script>
-    <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
   </head>
   <body>
     <a-scene fog="type: exponential; color: #AAA; density: 0.02;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: true; physicallyCorrectLights: true;">
       <a-assets>
-        <img id="displacementMap" src="./assets/images/displacement.jpg" crossorigin="anonymous" />
         <img id="grassTexture" src="./assets/images/rock.jpg" crossorigin="anonymous" />
       </a-assets>
       <a-entity light="type: ambient; color: #FFF; intensity: 0.2;"></a-entity>
@@ -27,7 +24,7 @@
         <a-entity
           id="terrain"
           position="0 0 0"
-          scale="6 6 6"
+          scale="12 12 12"
           material="shader: standard; side: double; wireframe: false;"
           >
         </a-entity>

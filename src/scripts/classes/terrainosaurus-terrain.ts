@@ -88,11 +88,16 @@ export function registerTerrainosaurusComponent(
           .recurseSectionInBackground(
             { vertices: terrainClient.vertices, absoluteIndex: 0 },
             2
-          )
-          .then(() => {
+          ).then(() => {
             this.updateChunkGeometries();
-            this.el.dispatchEvent(new CustomEvent("terrainInitialized", { detail: { terrainClient }}))
-          });
+            terrainClient.recurseSectionInBackground(
+              { vertices: terrainClient.vertices, absoluteIndex: 0 },
+              1
+            ).then(() => {
+              this.updateChunkGeometries();
+              this.el.dispatchEvent(new CustomEvent("terrainInitialized", { detail: { terrainClient }}))
+            });
+          })
       } else {
         this.el.dispatchEvent(new CustomEvent("terrainInitialized", { detail: { terrainClient }}))
       }
@@ -144,11 +149,13 @@ export function registerTerrainosaurusComponent(
       // Creates new geometries and assigns them to the chunks.
       const terrainClient = _terrainosaurusMap[this.terrainosaurusId];
       for (let i = 0; i < 64; i++) {
-        const chunkGeometry = this.createGeometryComponent(
-          terrainClient,
-          chunkIndexToQuadrantPath(i)
-        );
-        this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
+        setTimeout(() => {
+          const chunkGeometry = this.createGeometryComponent(
+            terrainClient,
+            chunkIndexToQuadrantPath(i)
+          );
+          this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
+        }, i * 10)
       }
     },
     createGeometryComponent(

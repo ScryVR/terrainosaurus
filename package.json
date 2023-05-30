@@ -1,6 +1,6 @@
 {
   "name": "terrainosaurus",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "main": "dist/index.js",
   "license": "MIT",
   "devDependencies": {
@@ -37,11 +37,10 @@
     "compress": "for f in dist/*; do uglifyjs --beautify semicolons=false -m -c -o \"$f\" -- \"$f\"; done"
   },
   "peerDependencies": {
-    "aframe": "^1.3.0",
-    "three": "^0.144.0"
+    "aframe": "^1.4.2",
+    "three": "^0.152.2"
   },
   "dependencies": {
-    "arborithm": "^1.0.4",
     "mafiu": "^1.0.8",
     "simplex-noise-esm": "^2.5.0-esm.0"
   }
