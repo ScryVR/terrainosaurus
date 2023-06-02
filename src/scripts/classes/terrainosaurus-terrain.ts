@@ -118,9 +118,10 @@ export function registerTerrainosaurusComponent(
         this.cameraWorldPosition,
         this.DOWN_VECTOR,
         0,
-        100
+        10
       );
       this.displacementTarget = this.el;
+      this.fallSpeed = 0
       if (this.data.wrapper) {
         this.displacementTarget = document.querySelector(this.data.wrapper);
         if (!this.displacementTarget) {
@@ -181,6 +182,7 @@ export function registerTerrainosaurusComponent(
         this.intersections.shift()
       }
       if (this.intersections.length) {
+        this.fallSpeed = 0
         // Basic PD control - not a proper physics sim with gravity
         // TODO: Consider how to handle IRL changes in elevation when in AR mode.
         const yGround = this.intersections[0].point.y;
@@ -193,6 +195,9 @@ export function registerTerrainosaurusComponent(
           this.displacementTarget.object3D.position.y - controlInput;
         this.intersections = [];
         return true;
+      } else {
+        this.fallSpeed = Math.min(this.fallSpeed + 0.01, 1)
+        this.displacementTarget.object3D.position.y = Math.min(this.displacementTarget.object3D.position.y + this.fallSpeed, 200)
       }
       this.intersections = [];
       return false;
