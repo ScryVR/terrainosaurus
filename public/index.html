@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
   </head>
   <body>
-    <a-scene fog="type: exponential; color: #AAA; density: 0.02;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: true; physicallyCorrectLights: true;">
+    <a-scene fog="type: exponential; color: #AAA; density: 0.01;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: true; physicallyCorrectLights: true;">
       <a-assets>
         <img id="grassTexture" src="./assets/images/rock.jpg" crossorigin="anonymous" />
       </a-assets>
@@ -20,9 +20,9 @@
       >
       </a-entity>
       <a-entity id="wrapper">
-        <a-cylinder id="ocean" material="transparent: true; opacity: 0.4; color: cyan; side: double;" position="0 -64 0" scale="120 120 120"></a-cylinder>
-        <a-box scale="5 50 5" color="red" rotation="-45 0 0" position="0 5 0"></a-box>
-        <a-box scale="5 50 5" color="red" rotation="-45 0 0" position="7 5 0"></a-box>
+        <a-cylinder id="ocean" material="transparent: true; opacity: 0.4; color: cyan; side: double;" position="0 -64 0" scale="420 420 420"></a-cylinder>
+        <a-box scale="5 50 5" color="red" rotation="-60 0 0" position="0 5 0"></a-box>
+        <a-box scale="5 50 5" color="red" rotation="-60 0 0" position="7 5 0"></a-box>
         <a-entity
           id="terrain"
           position="0 0 0"

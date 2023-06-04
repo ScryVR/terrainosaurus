@@ -7,7 +7,7 @@
  *
  */
 
-import { AFrame } from "aframe";
+import { AFrame, utils } from "aframe";
 import { Raycaster, Vector3 } from "three";
 import { IRegisterProps, ITerrainosaurusProps } from "./interfaces";
 import { Terrainosaurus } from "./Terrainosaurus";
@@ -32,6 +32,7 @@ export function registerTerrainosaurusComponent(
       dirtColor: { type: "vec3", default: new Vector3(0.7, 0.5, 0.3) },
       stoneColor: { type: "vec3", default: new Vector3(0.6, 0.6, 0.6) },
       sandColor: { type: "vec3", default: new Vector3(1, 0.8, 0.6) },
+      gravityEnabled: { type: "boolean", default: true },
       waterLevel: { type: "number" },
       noCollisionWrapper: { type: "string" }
     },
@@ -111,14 +112,14 @@ export function registerTerrainosaurusComponent(
       this.cameraRig = document.querySelector("#cameraRig")
       this.cameraRigWorldPosition = new Vector3()
 
-      this.UP_VECTOR = new Vector3(0, 1, 0);
+      this.UP_VECTOR = new Vector3(0, 2, 0);
       this.DOWN_VECTOR = new Vector3(0, -1, 0);
       this.intersections = [];
       this.raycaster = new Raycaster(
         this.cameraWorldPosition,
         this.DOWN_VECTOR,
         0,
-        10
+        4
       );
       this.displacementTarget = this.el;
       this.fallSpeed = 0
@@ -133,6 +134,7 @@ export function registerTerrainosaurusComponent(
       if (this.data.noCollisionWrapper) {
         this.raycasterExclusion = document.querySelector(this.data.noCollisionWrapper)
       }
+      this.tick = utils.throttleTick(this.tick, 17, this)
     },
     tick() {
       this.camera.object3D.getWorldPosition(this.cameraWorldPosition);
@@ -188,14 +190,14 @@ export function registerTerrainosaurusComponent(
         const yGround = this.intersections[0].point.y;
         const yRig = this.cameraRigWorldPosition.y
         // Use the nominal camera height because AR mode is a sneaky little guy (I want to be able to get low to look closely at the ground)
-        const controlInput = 0.4 * (yGround - (yRig) + this.data.cameraHeight);
+        const controlInput = 0.15 * (yGround - (yRig) + this.data.cameraHeight);
 
         // Note that we shift the ground, not camera. This makes AR mode work better
         this.displacementTarget.object3D.position.y =
           this.displacementTarget.object3D.position.y - controlInput;
         this.intersections = [];
         return true;
-      } else {
+      } else if(this.data.gravityEnabled) {
         this.fallSpeed = Math.min(this.fallSpeed + 0.01, 1)
         this.displacementTarget.object3D.position.y = Math.min(this.displacementTarget.object3D.position.y + this.fallSpeed, 200)
       }

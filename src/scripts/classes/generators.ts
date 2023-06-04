@@ -135,6 +135,10 @@ export const defaultGenerators: Array<(...args: any) => any> = [
       let averageColor = getAverageNeighborColors.call(this, x, z, stepSize, [
         ...COLORS[choice],
       ]);
+      // Noise step - each channel can change by +-10%
+      averageColor = averageColor.map((c: number) => {
+        return c * (1 - 0.08 + 0.16 * Math.random())
+      })
       return averageColor;
     }
 
