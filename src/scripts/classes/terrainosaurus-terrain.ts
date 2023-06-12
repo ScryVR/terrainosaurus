@@ -34,7 +34,8 @@ export function registerTerrainosaurusComponent(
       sandColor: { type: "vec3", default: new Vector3(1, 0.8, 0.6) },
       gravityEnabled: { type: "boolean", default: true },
       waterLevel: { type: "number" },
-      noCollisionWrapper: { type: "string" }
+      noCollisionWrapper: { type: "string" },
+      pVal: { type: "number", default: 0.4 },
     },
     init() {
       // Initialize the terrainosaurus client in such a way that the memory-intensive
@@ -190,7 +191,7 @@ export function registerTerrainosaurusComponent(
         const yGround = this.intersections[0].point.y;
         const yRig = this.cameraRigWorldPosition.y
         // Use the nominal camera height because AR mode is a sneaky little guy (I want to be able to get low to look closely at the ground)
-        const controlInput = 0.15 * (yGround - (yRig) + this.data.cameraHeight);
+        const controlInput = this.data.pVal * (yGround - (yRig) + this.data.cameraHeight);
 
         // Note that we shift the ground, not camera. This makes AR mode work better
         this.displacementTarget.object3D.position.y =
