@@ -57,11 +57,11 @@ export const defaultGenerators: Array<(...args: any) => any> = [
         this.accum = 0
       }
       if (!this.waveFunctionState[v.pos[0]][v.pos[2]]) {
-        let initialValue = ["GRASS", "DIRT", "STONE"];
-        if (v.pos[1] < this.waterLevel + randomValues[index]) {
+        let initialValue = ["GRASS", "GRASS", "DIRT", "STONE"];
+        if (v.pos[1] < this.waterLevel + Math.abs(randomValues[index] * 0.2)) {
           initialValue = ["SAND"]
-        } else if (v.pos[1] > this.waterLevel + 2 + randomValues[index]) {
-          initialValue = ["STONE", "STONE", "STONE", "DIRT", "GRASS"]
+        } else if (v.pos[1] > this.waterLevel + 1 + Math.abs(randomValues[index]) * 0.2) {
+          initialValue = ["STONE", "STONE", "STONE", "DIRT"]
         }
         this.waveFunctionState[v.pos[0]][v.pos[2]] = initialValue;
       }
@@ -94,11 +94,11 @@ export const defaultGenerators: Array<(...args: any) => any> = [
           "RIGHT_MIDDLE",
         ].includes(key)
       ) {
-        const displacement =
-          (randomValues[indices[0]] * squareSize) /
-          Math.pow(vertices[0].recursions + 1, 0.7);
+        // const displacement =
+        //   (randomValues[indices[0]] * squareSize) /
+        //   Math.pow(vertices[0].recursions + 1, 0.7);
         indices.forEach((index) => {
-          vertices[index].pos[1] += displacement;
+          vertices[index].pos[1] = randomValues[index];
         });
       }
     });
@@ -119,16 +119,20 @@ export const defaultGenerators: Array<(...args: any) => any> = [
         // If the most recent choice is valid, high chance to choose it again
         if (this.mostRecentChoice !== "SAND" && choices.includes(this.mostRecentChoice) && this.accum < randomValue) {
           this.accum += 0.005
-          choice = this.mostRecentChoice
+          choice = this.mostRecentChoice || "SAND"
         } else {
           if (this.accum >= randomValue) {
             this.accum = 0
           }
           choices = choices.filter((c: Color) => c !== this.mostRecentChoice)
-          choice = choices[Math.floor(randomValue * choices.length)];
+          let choiceNoise = randomValue
+          while(Math.abs(choiceNoise) > 1) {
+            choiceNoise /= 2
+          }
+          choice = choices[Math.floor(choiceNoise * choices.length)]
         }
         this.waveFunctionState[x][z] = [choice];
-        this.mostRecentChoice = choice;
+        this.mostRecentChoice = choice || this.mostRecentChoice;
       }
       // Update all neighbors based on the choice
       restrictColors.call(this, x, y, stepSize);

@@ -25,6 +25,7 @@ export class Terrainosaurus {
   generatorSelector: (...args: any) => number;
   vertexWorker?: Worker;
   vertexWorkerUrl?: string | URL;
+  genParams: Record<string, number>;
 
   constructor(props: ITerrainosaurusProps) {
     this.vertices = [];
@@ -36,12 +37,31 @@ export class Terrainosaurus {
       props.generatorSelector || defaultGeneratorSelector;
     this.generators = props.generators || defaultGenerators;
     this.vertexWorkerUrl = props.vertexWorkerUrl;
-    this.seed = (props.seed || Math.random()).toString();
+    this.seed = props.seed;
+    this.setGenerationParameters();
     this.colors = props.colors;
     this.waterLevel = props.waterLevel;
     this.state.simplex = new SimplexNoise(this.seed);
     this.setInitialVertices(this.offset);
     this.THREE = { Vector3 };
+  }
+
+  setGenerationParameters() {
+    // Sets island size, landmass slope, max landmass height, and smoothness
+    if (!this.seed) {
+      this.seed = Math.random().toString().replace("0.", "");
+    }
+    let paramSeed = this.seed.toString().replace(/[a-z]/g, "")
+    while (paramSeed.length < 10) {
+      paramSeed += paramSeed
+    }
+    this.genParams = {
+      islandSize: Number(`${paramSeed[0]}`) * 1.2 + 1,
+      landmassSlope: Number(`${paramSeed[1]}`) * 0.05,
+      maxHeight: Number(`${paramSeed[2]}`) / 4,
+      smoothness: (Number(`${paramSeed[3]}`) + 1) * 0.2,
+      elevation: Number(`${paramSeed[4]}`) * 0.2 - 0.5,
+    };
   }
 
   setInitialVertices(offset: number) {
@@ -109,6 +129,7 @@ export class Terrainosaurus {
         section: { vertices: section.vertices, absoluteIndex: 0 },
         generatorSelector: this.generatorSelector.toString(),
         generators: this.generators.map((gen) => gen.toString()),
+        genParams: this.genParams,
         levels,
       });
     });
@@ -322,13 +343,35 @@ export class Terrainosaurus {
           vertexIndex: props.vertexIndex,
         })
       ];
-    generator.call(
-      this,
-      newVertices,
-      newVertices.map((v: any) =>
-        this.state.simplex.noise2D(v.pos[0], v.pos[2])
-      )
-    );
+    const simplex = this.state.simplex;
+    const compositeNoise = (v: any) => {
+      const sampleNoise = (scale: number, offset: number = 0) => {
+        const noise = simplex.noise2D(
+          v.pos[0] / scale + offset,
+          v.pos[2] / scale + offset
+        );
+        return noise
+      };
+  
+      const spline = (input: number, slope: number) => {
+        return Math.min(1, Math.max(-1, Math.atan(input) / slope));
+      };
+  
+      
+      const continentNoise =
+      spline(
+        sampleNoise(this.genParams.islandSize, 100),
+        this.genParams.landmassSlope
+        );
+
+      const plateauNoise = this.genParams.maxHeight * sampleNoise(this.genParams.maxHeight * 20, 200)
+  
+      // const rockyNoise = 0.2 * sampleNoise(this.genParams.smoothness, 100)
+      const rockyNoise = 0.2 * sampleNoise(this.genParams.smoothness, 100) * sampleNoise(this.genParams.smoothness * 5, 300)
+      console.log("noise", this.genParams.elevation)
+      return continentNoise * plateauNoise + this.genParams.elevation + rockyNoise;
+    };
+    generator.call(this, newVertices, newVertices.map(compositeNoise));
     return newVertices;
   }
   createGeometry(section: Array<IVertex> = this.vertices) {
@@ -344,7 +387,7 @@ export class Terrainosaurus {
         acc.positions = acc.positions.concat(vertex.pos);
         acc.normals = acc.normals.concat(vertex.norm);
         acc.uvs = acc.uvs.concat(vertex.uv);
-        acc.colors = acc.colors.concat(vertex.color)
+        acc.colors = acc.colors.concat(vertex.color);
         // if (vertex.pos[1] > 3) {
         //   acc.colors = acc.colors.concat(0.6, 0.6, 0.6);
         // } else if (vertex.pos[1] < 1.2) {
