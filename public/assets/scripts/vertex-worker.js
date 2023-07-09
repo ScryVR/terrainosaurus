@@ -18,6 +18,7 @@ self.addEventListener("message", ({ data }) => {
         };
         if (!simplex) {
             simplex = new SimplexNoise(data.seed || Math.random().toString());
+            context.state = { simplex };
         }
         const levels = data.levels || 1;
         recurseSection.call(context, data.section, levels);
@@ -177,20 +178,7 @@ function getSubSquares(props) {
         bottomRight,
         vertexIndex: props.vertexIndex,
     })];
-    const compositeNoise = (v) => {
-        const sampleNoise = (scale, offset = 0) => {
-            const noise = simplex.noise2D(v.pos[0] / scale + offset, v.pos[2] / scale + offset);
-            return noise;
-        };
-        const spline = (input, slope, bounds = 1) => {
-            return Math.min(bounds, Math.max(-bounds, Math.atan(input) / slope));
-        };
-        const continentNoise = spline(sampleNoise(this.genParams.islandSize, 100), this.genParams.landmassSlope);
-        const plateauNoise = this.genParams.maxHeight * sampleNoise(this.genParams.maxHeight * 20, 200);
-        const rockyNoise = 0.2 * sampleNoise(this.genParams.smoothness, 100) * sampleNoise(this.genParams.smoothness * 5, 300);
-        return continentNoise * plateauNoise + this.genParams.elevation + rockyNoise;
-    };
-    center = generator.call(this, newVertices, newVertices.map(compositeNoise));
+    center = generator.call(this, newVertices, newVertices.map((v) => this.state.simplex.noise2D(v.pos[0], v.pos[2])));
     return newVertices;
 }
 function bilinearInterpolation(props) {

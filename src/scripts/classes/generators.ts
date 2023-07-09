@@ -84,6 +84,47 @@ export const defaultGenerators: Array<(...args: any) => any> = [
 
     // Displacement stuff
     const squareSize = vertices[1].pos[0] - vertices[0].pos[0];
+    const simplex = this.state.simplex
+    const compositeNoise = (v: any) => {
+      const sampleNoise = (scale: number, offset: number = 0) => {
+        const noise = simplex.noise2D(
+          v.pos[0] / scale + offset,
+          v.pos[2] / scale + offset
+        );
+        return noise;
+      };
+  
+      /**
+       *
+       * @param input A noise value
+       * @param stops An array of arrays where each element represents an inflection point of a piecewise function
+       */
+      const spline = (input: number, steepness: number, scale: number = 0.5) => {
+        let splinedValue = 0;
+        for (let i = 0; i < 4; i++) {
+          // splinedValue += 0.4 * Math.atan(input * 40 - 10 * i)
+          splinedValue +=
+            scale *
+              Math.atan(
+                input * (steepness - 0.5 * steepness * i) - (steepness / 4) * i
+              ) +
+            scale;
+        }
+        return splinedValue;
+      };
+  
+      let continentNoise = sampleNoise(this.genParams.islandSize, 100);
+      // continentNoise = spline(continentNoise, this.genParams.landmassSlope, this.genParams.maxHeight)
+      continentNoise = spline(
+        continentNoise,
+        this.genParams.landmassSlope *
+          sampleNoise(this.genParams.islandSize / 2, 200),
+        this.genParams.maxHeight
+      );
+  
+      const plateauNoise = 0.03 * sampleNoise(1, -200);
+      return continentNoise + plateauNoise
+    };
     Object.entries(VERTEX_INDICES).forEach(([key, indices]) => {
       if (
         [
@@ -94,11 +135,11 @@ export const defaultGenerators: Array<(...args: any) => any> = [
           "RIGHT_MIDDLE",
         ].includes(key)
       ) {
-        // const displacement =
-        //   (randomValues[indices[0]] * squareSize) /
-        //   Math.pow(vertices[0].recursions + 1, 0.7);
+        const fractalDisplacement =
+          (randomValues[indices[0]] * squareSize) /
+          Math.pow(vertices[0].recursions + 1, 0.7);
         indices.forEach((index) => {
-          vertices[index].pos[1] = randomValues[index];
+          vertices[index].pos[1] += compositeNoise(vertices[index]) * fractalDisplacement// randomValues[index];
         });
       }
     });

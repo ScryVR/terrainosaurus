@@ -51,16 +51,16 @@ export class Terrainosaurus {
     if (!this.seed) {
       this.seed = Math.random().toString().replace("0.", "");
     }
-    let paramSeed = this.seed.toString().replace(/[a-z]/g, "")
+    let paramSeed = this.seed.toString().replace(/[a-z]/g, "");
     while (paramSeed.length < 10) {
-      paramSeed += paramSeed
+      paramSeed += paramSeed;
     }
     this.genParams = {
-      islandSize: Number(`${paramSeed[0]}`) * 1.2 + 1,
-      landmassSlope: Number(`${paramSeed[1]}`) * 0.05,
-      maxHeight: Number(`${paramSeed[2]}`) / 4,
-      smoothness: (Number(`${paramSeed[3]}`) + 1) * 0.2,
-      elevation: Number(`${paramSeed[4]}`) * 0.2 - 0.5,
+      islandSize: Number(`${paramSeed[0]}`) * 4 + 5 || 20,
+      landmassSlope: Number(`${paramSeed[1]}`) * 5 + 5 || 25,
+      maxHeight: Number(`${paramSeed[2]}`) / 15 || 0.2,
+      smoothness: (Number(`${paramSeed[3]}`) + 1) * 0.2 || 1,
+      elevation: Number(`${paramSeed[4]}`) * 0.1 - 0.5 || 0,
     };
   }
 
@@ -343,35 +343,11 @@ export class Terrainosaurus {
           vertexIndex: props.vertexIndex,
         })
       ];
-    const simplex = this.state.simplex;
-    const compositeNoise = (v: any) => {
-      const sampleNoise = (scale: number, offset: number = 0) => {
-        const noise = simplex.noise2D(
-          v.pos[0] / scale + offset,
-          v.pos[2] / scale + offset
-        );
-        return noise
-      };
-  
-      const spline = (input: number, slope: number) => {
-        return Math.min(1, Math.max(-1, Math.atan(input) / slope));
-      };
-  
-      
-      const continentNoise =
-      spline(
-        sampleNoise(this.genParams.islandSize, 100),
-        this.genParams.landmassSlope
-        );
-
-      const plateauNoise = this.genParams.maxHeight * sampleNoise(this.genParams.maxHeight * 20, 200)
-  
-      // const rockyNoise = 0.2 * sampleNoise(this.genParams.smoothness, 100)
-      const rockyNoise = 0.2 * sampleNoise(this.genParams.smoothness, 100) * sampleNoise(this.genParams.smoothness * 5, 300)
-      console.log("noise", this.genParams.elevation)
-      return continentNoise * plateauNoise + this.genParams.elevation + rockyNoise;
-    };
-    generator.call(this, newVertices, newVertices.map(compositeNoise));
+    generator.call(
+      this,
+      newVertices,
+      newVertices.map((v: any) => this.state.simplex.noise2D(v.pos[0], v.pos[2]))
+    );
     return newVertices;
   }
   createGeometry(section: Array<IVertex> = this.vertices) {
