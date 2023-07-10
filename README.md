@@ -1,11 +1,15 @@
 # Terrainosaurus
 
+
 ## Overview
 
 This repository provides an [a-frame](https://aframe.io/docs/1.4.0/introduction/) component called `terrainosaurus-terrain`. This component is intended to be used as a ground surface in VR applications. It provides some default terrain generators, but custom generators can be provided. The terrain generator uses Web Workers and chunking to significantly improve performance.
 
-[Click here to see some examples](#examples)
+![Terrainosaurus example output inside Pocket Dimension](/public/assets/images/terrainosaurus_v1.png)
 
+🔌🔌🔌 **Shameless plug**: I built Terrainosaurus for [Pocket Dimension](https://about.pocketdimension.io), which is a cool app that you should check out. 🔌🔌🔌
+
+[Click here to see some examples](#examples)
 
 ## Installation and usage
 
@@ -120,4 +124,5 @@ yarn dev
 ## (#Examples)
 
 ![Terrainosaurus example output](/public/assets/images/composite_noise_fractal_terrain.png)
-![Terrainosaurus example output inside Pocket Dimension](/public/assets/images/terrainosaurus_v1.png)
+![Terrainosaurus example 2](/public/assets/images/terrainosaurus_example2.png)
+![Terrainosaurus example 3](/public/assets/images/terrainosaurus_example3.png)
