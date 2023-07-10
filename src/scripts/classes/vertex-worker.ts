@@ -3,30 +3,30 @@ import "https://unpkg.com/three@0.144.0/build/three.min.js";
 // @ts-ignore
 import { SimplexNoise } from "https://unpkg.com/simplex-noise-esm@2.5.0-esm.0/dist-esm/simplex-noise.js";
 
-let simplex: SimplexNoise | null = null
-
+let simplex: SimplexNoise | null = null;
 
 const VERTICES_PER_SQUARE = 6;
 
-
 self.addEventListener("message", ({ data }) => {
   if (data.action === "recurseSection") {
-    const context = {
+    const context: Record<string, any> = {
       colors: data.colors,
       waterLevel: data.waterLevel,
       vertices: data.section.vertices,
+      genParams: data.genParams,
       generators: data.generators.map((f: string) => reconstructFunction(f)),
       generatorSelector: reconstructFunction(data.generatorSelector),
       // @ts-ignore
-      THREE
+      THREE,
     };
     if (!simplex) {
-      simplex = new SimplexNoise(data.seed || Math.random().toString())
+      simplex = new SimplexNoise(data.seed || Math.random().toString());
+      context.state = { simplex }
     }
     const levels = data.levels || 1;
     recurseSection.call(context, data.section, levels);
     postMessage({
-      vertices: context.vertices
+      vertices: context.vertices,
     });
   }
 });
@@ -37,8 +37,8 @@ function reconstructFunction(functionString: string) {
     ""
   );
   // Some silliness to account for how webpack makes all functions single-line. Just go with it for now.
-  functionString = functionString.replace("){", "){\n")
-  functionString = functionString.replace(/}$/g, "\n}")
+  functionString = functionString.replace("){", "){\n");
+  functionString = functionString.replace(/}$/g, "\n}");
   let functionCode: string[] | string = functionString.split("\n");
   functionCode.pop();
   let functionSignature = functionCode.shift();
@@ -102,23 +102,6 @@ function getSubSquares(props: any) {
     p3: topRight,
     p4: topLeft,
   });
-
-  // const generator =
-  //   this.generators[
-  //     this.generatorSelector({
-  //       topLeft,
-  //       topRight,
-  //       bottomLeft,
-  //       bottomRight,
-  //       vertexIndex: props.vertexIndex,
-  //     })
-  //   ];
-  // center = generator.call(this, center, {
-  //   topLeft,
-  //   topRight,
-  //   bottomLeft,
-  //   bottomRight,
-  // }, simplex.noise2D(center.x + 10, center.z + 10)); // Offset since simplex noise is always 0 at 0, 0
 
   const baseVertex = vertexGenerator(recursions);
   const newVertices = [
@@ -218,13 +201,6 @@ function getSubSquares(props: any) {
     },
     { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
   ];
-  // const bottomRightIndices = newVertices.reduce((acc, v, index) => {
-  //   if (v.pos[0] === bottomRight.pos[0] && v.pos[2] === bottomRight.pos[2]) {
-  //     acc.push(index)
-  //   }
-  //   return acc
-  // }, [])
-  // console.log({ bottomRightIndices })
   const generator =
     this.generators[
       this.generatorSelector({
@@ -235,7 +211,8 @@ function getSubSquares(props: any) {
         vertexIndex: props.vertexIndex,
       })
     ];
-  center = generator.call(this, newVertices, newVertices.map(v => simplex.noise2D(v.pos[0], v.pos[2])))
+
+  center = generator.call(this, newVertices, newVertices.map((v) => this.state.simplex.noise2D(v.pos[0] / 10, v.pos[2] / 10)));
   return newVertices;
 }
 

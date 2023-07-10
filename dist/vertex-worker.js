@@ -120,7 +120,7 @@ function getSubSquares(e) {
         bottomLeft: t,
         bottomRight: o,
         vertexIndex: e.vertexIndex
-    })].call(this, p, p.map(e => simplex.noise2D(e.pos[0], e.pos[2])));
+    })].call(this, p, p.map(e => this.state.simplex.noise2D(e.pos[0] / 10, e.pos[2] / 10)));
     return p;
 }
 
@@ -148,11 +148,14 @@ self.addEventListener("message", ({
         colors: e.colors,
         waterLevel: e.waterLevel,
         vertices: e.section.vertices,
+        genParams: e.genParams,
         generators: e.generators.map(e => reconstructFunction(e)),
         generatorSelector: reconstructFunction(e.generatorSelector),
         THREE: THREE
-    }, simplex = simplex || new SimplexNoise(e.seed || Math.random().toString()), 
-    o = e.levels || 1, recurseSection.call(s, e.section, o), postMessage({
+    }, simplex || (simplex = new SimplexNoise(e.seed || Math.random().toString()), 
+    s.state = {
+        simplex: simplex
+    }), o = e.levels || 1, recurseSection.call(s, e.section, o), postMessage({
         vertices: s.vertices
     }));
 });

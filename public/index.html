@@ -20,9 +20,7 @@
       >
       </a-entity>
       <a-entity id="wrapper">
-        <a-cylinder id="ocean" material="transparent: true; opacity: 0.4; color: cyan; side: double;" position="0 -64 0" scale="420 420 420"></a-cylinder>
-        <a-box scale="5 50 5" color="red" rotation="-60 0 0" position="0 5 0"></a-box>
-        <a-box scale="5 50 5" color="red" rotation="-60 0 0" position="7 5 0"></a-box>
+        <a-cylinder id="ocean" material="transparent: true; opacity: 0.4; color: cyan; side: double;" position="0 -210 0" scale="420 420 420"></a-cylinder>
         <a-entity
           id="terrain"
           position="0 0 0"
@@ -60,7 +58,15 @@
     </a-scene>
     <script type="module">
       window.postMessage({ type: "sceneInitialized" })
-      document.querySelector("#terrain").setAttribute("terrainosaurus-terrain", { noCollisionWrapper: "#ocean", wrapper: "#wrapper", seed: Math.random(), cameraHeight: 1.5, })
+      const searchParams = new URLSearchParams(window.location.search)
+      document.querySelector("#terrain").setAttribute(
+        "terrainosaurus-terrain",
+        {
+          noCollisionWrapper: "#ocean",
+          wrapper: "#wrapper",
+          seed: searchParams.get("id") || Math.random(),
+          cameraHeight: 1.5,
+        })
       document.querySelector("[cursor-teleport")?.setAttribute("cursor-teleport", {
         collisionEntities: ".terrainosaurus-chunk"
       })

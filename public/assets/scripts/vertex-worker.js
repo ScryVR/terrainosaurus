@@ -10,18 +10,20 @@ self.addEventListener("message", ({ data }) => {
             colors: data.colors,
             waterLevel: data.waterLevel,
             vertices: data.section.vertices,
+            genParams: data.genParams,
             generators: data.generators.map((f) => reconstructFunction(f)),
             generatorSelector: reconstructFunction(data.generatorSelector),
             // @ts-ignore
-            THREE
+            THREE,
         };
         if (!simplex) {
             simplex = new SimplexNoise(data.seed || Math.random().toString());
+            context.state = { simplex };
         }
         const levels = data.levels || 1;
         recurseSection.call(context, data.section, levels);
         postMessage({
-            vertices: context.vertices
+            vertices: context.vertices,
         });
     }
 });
@@ -78,22 +80,6 @@ function getSubSquares(props) {
         p3: topRight,
         p4: topLeft,
     });
-    // const generator =
-    //   this.generators[
-    //     this.generatorSelector({
-    //       topLeft,
-    //       topRight,
-    //       bottomLeft,
-    //       bottomRight,
-    //       vertexIndex: props.vertexIndex,
-    //     })
-    //   ];
-    // center = generator.call(this, center, {
-    //   topLeft,
-    //   topRight,
-    //   bottomLeft,
-    //   bottomRight,
-    // }, simplex.noise2D(center.x + 10, center.z + 10)); // Offset since simplex noise is always 0 at 0, 0
     const baseVertex = vertexGenerator(recursions);
     const newVertices = [
         // Top left square
@@ -185,13 +171,6 @@ function getSubSquares(props) {
         },
         { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
     ];
-    // const bottomRightIndices = newVertices.reduce((acc, v, index) => {
-    //   if (v.pos[0] === bottomRight.pos[0] && v.pos[2] === bottomRight.pos[2]) {
-    //     acc.push(index)
-    //   }
-    //   return acc
-    // }, [])
-    // console.log({ bottomRightIndices })
     const generator = this.generators[this.generatorSelector({
         topLeft,
         topRight,
@@ -199,7 +178,7 @@ function getSubSquares(props) {
         bottomRight,
         vertexIndex: props.vertexIndex,
     })];
-    center = generator.call(this, newVertices, newVertices.map(v => simplex.noise2D(v.pos[0], v.pos[2])));
+    center = generator.call(this, newVertices, newVertices.map((v) => this.state.simplex.noise2D(v.pos[0] / 10, v.pos[2] / 10)));
     return newVertices;
 }
 function bilinearInterpolation(props) {

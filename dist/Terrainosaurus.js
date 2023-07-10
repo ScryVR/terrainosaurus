@@ -29,14 +29,27 @@ class Terrainosaurus {
     generatorSelector;
     vertexWorker;
     vertexWorkerUrl;
+    genParams;
     constructor(e) {
         this.vertices = [], this.state = e.state || {}, this.indices = [], this.size = e.size, 
         this.offset = e.size / 2, this.generatorSelector = e.generatorSelector || defaultGeneratorSelector, 
         this.generators = e.generators || defaultGenerators, this.vertexWorkerUrl = e.vertexWorkerUrl, 
-        this.seed = (e.seed || Math.random()).toString(), this.colors = e.colors, 
+        this.seed = e.seed, this.setGenerationParameters(), this.colors = e.colors, 
         this.waterLevel = e.waterLevel, this.state.simplex = new SimplexNoise(this.seed), 
         this.setInitialVertices(this.offset), this.THREE = {
             Vector3: Vector3
+        };
+    }
+    setGenerationParameters() {
+        this.seed || (this.seed = Math.random().toString().replace("0.", ""));
+        let e = this.seed.toString().replace(/[a-z]/g, "");
+        for (;e.length < 10; ) e += e;
+        this.genParams = {
+            islandSize: 4 * Number("" + e[0]) + 5 || 20,
+            landmassSlope: 4 * Number("" + e[1]) + 5 || 25,
+            maxHeight: Number("" + e[2]) / 15 || .2,
+            smoothness: .2 * (Number("" + e[3]) + 1) || 1,
+            plateauFactor: .1 * Number("" + e[4]) - .5 || .5
         };
     }
     setInitialVertices(t) {
@@ -107,6 +120,7 @@ class Terrainosaurus {
                 },
                 generatorSelector: this.generatorSelector.toString(),
                 generators: this.generators.map(e => e.toString()),
+                genParams: this.genParams,
                 levels: o
             });
         });
