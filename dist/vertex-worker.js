@@ -36,98 +36,92 @@ function recursivelyGenerate(e) {
 }
 
 function getSubSquares(e) {
-    var s = e["recursions"], [ o, t, n, , , r ] = e.vertices, i = bilinearInterpolation({
+    var s = e["recursions"], [ o, t, r, , , n ] = e.vertices, p = bilinearInterpolation({
         p1: o,
         p2: t,
-        p3: n,
-        p4: r
-    }), s = vertexGenerator(s), i = [ {
-        pos: [ i.x, i.y, i.z ],
+        p3: r,
+        p4: n
+    }), s = vertexGenerator(s), p = [ {
+        pos: [ p.x, p.y, p.z ],
         ...s.next().value
     }, {
-        pos: [ r.pos[0], (r.pos[1] + t.pos[1]) / 2, i.z ],
+        pos: [ n.pos[0], (n.pos[1] + t.pos[1]) / 2, p.z ],
         ...s.next().value
     }, {
-        pos: [ i.x, (r.pos[1] + n.pos[1]) / 2, r.pos[2] ],
+        pos: [ p.x, (n.pos[1] + r.pos[1]) / 2, n.pos[2] ],
         ...s.next().value
     }, {
-        pos: [ i.x, (r.pos[1] + n.pos[1]) / 2, r.pos[2] ],
+        pos: [ p.x, (n.pos[1] + r.pos[1]) / 2, n.pos[2] ],
         ...s.next().value
     }, {
-        pos: [ r.pos[0], (r.pos[1] + t.pos[1]) / 2, i.z ],
+        pos: [ n.pos[0], (n.pos[1] + t.pos[1]) / 2, p.z ],
+        ...s.next().value
+    }, {
+        ...n,
+        ...s.next().value
+    }, {
+        pos: [ r.pos[0], (r.pos[1] + o.pos[1]) / 2, p.z ],
+        ...s.next().value
+    }, {
+        pos: [ p.x, p.y, p.z ],
         ...s.next().value
     }, {
         ...r,
         ...s.next().value
     }, {
-        pos: [ n.pos[0], (n.pos[1] + o.pos[1]) / 2, i.z ],
+        ...r,
         ...s.next().value
     }, {
-        pos: [ i.x, i.y, i.z ],
+        pos: [ p.x, p.y, p.z ],
         ...s.next().value
     }, {
-        ...n,
+        pos: [ p.x, (n.pos[1] + r.pos[1]) / 2, r.pos[2] ],
         ...s.next().value
     }, {
-        ...n,
-        ...s.next().value
-    }, {
-        pos: [ i.x, i.y, i.z ],
-        ...s.next().value
-    }, {
-        pos: [ i.x, (r.pos[1] + n.pos[1]) / 2, n.pos[2] ],
-        ...s.next().value
-    }, {
-        pos: [ i.x, (t.pos[1] + o.pos[1]) / 2, t.pos[2] ],
+        pos: [ p.x, (t.pos[1] + o.pos[1]) / 2, t.pos[2] ],
         ...s.next().value
     }, {
         ...t,
         ...s.next().value
     }, {
-        pos: [ i.x, i.y, i.z ],
+        pos: [ p.x, p.y, p.z ],
         ...s.next().value
     }, {
-        pos: [ i.x, i.y, i.z ],
+        pos: [ p.x, p.y, p.z ],
         ...s.next().value
     }, {
         ...t,
         ...s.next().value
     }, {
-        pos: [ r.pos[0], (r.pos[1] + t.pos[1]) / 2, i.z ],
+        pos: [ n.pos[0], (n.pos[1] + t.pos[1]) / 2, p.z ],
         ...s.next().value
     }, {
         ...o,
         ...s.next().value
     }, {
-        pos: [ i.x, (t.pos[1] + o.pos[1]) / 2, t.pos[2] ],
+        pos: [ p.x, (t.pos[1] + o.pos[1]) / 2, t.pos[2] ],
         ...s.next().value
     }, {
-        pos: [ n.pos[0], (n.pos[1] + o.pos[1]) / 2, i.z ],
+        pos: [ r.pos[0], (r.pos[1] + o.pos[1]) / 2, p.z ],
         ...s.next().value
     }, {
-        pos: [ n.pos[0], (n.pos[1] + o.pos[1]) / 2, i.z ],
+        pos: [ r.pos[0], (r.pos[1] + o.pos[1]) / 2, p.z ],
         ...s.next().value
     }, {
-        pos: [ i.x, (t.pos[1] + o.pos[1]) / 2, t.pos[2] ],
+        pos: [ p.x, (t.pos[1] + o.pos[1]) / 2, t.pos[2] ],
         ...s.next().value
     }, {
-        pos: [ i.x, i.y, i.z ],
+        pos: [ p.x, p.y, p.z ],
         ...s.next().value
     } ];
     this.generators[this.generatorSelector({
-        topLeft: r,
-        topRight: n,
+        topLeft: n,
+        topRight: r,
         bottomLeft: t,
         bottomRight: o,
         vertexIndex: e.vertexIndex
-    })].call(this, i, i.map(o => {
-        var e = (e, s = 0) => {
-            return simplex.noise2D(o.pos[0] / e + s, o.pos[2] / e + s);
-        }, s = (t = e(this.genParams.islandSize, 100), n = this.genParams.landmassSlope, 
-        s = 1, Math.min(s, Math.max(-s, Math.atan(t) / n))), t = this.genParams.maxHeight * e(20 * this.genParams.maxHeight, 200), n = .2 * e(this.genParams.smoothness, 100) * e(5 * this.genParams.smoothness, 300);
-        return s * t + this.genParams.elevation + n;
-    }));
-    return i;
+    })].call(this, p, p.map(e => this.state.simplex.noise2D(e.pos[0] / 10, e.pos[2] / 10)));
+    return p;
 }
 
 function bilinearInterpolation(e) {
@@ -136,9 +130,9 @@ function bilinearInterpolation(e) {
         p2: s,
         p3: o,
         p4: t,
-        isCentroid: n = !0
+        isCentroid: r = !0
     } = e;
-    if (n) return {
+    if (r) return {
         x: (e.pos[0] + s.pos[0] + o.pos[0] + t.pos[0]) / 4,
         y: (e.pos[1] + s.pos[1] + o.pos[1] + t.pos[1]) / 4,
         z: (e.pos[2] + s.pos[2] + o.pos[2] + t.pos[2]) / 4
@@ -158,8 +152,10 @@ self.addEventListener("message", ({
         generators: e.generators.map(e => reconstructFunction(e)),
         generatorSelector: reconstructFunction(e.generatorSelector),
         THREE: THREE
-    }, simplex = simplex || new SimplexNoise(e.seed || Math.random().toString()), 
-    o = e.levels || 1, recurseSection.call(s, e.section, o), postMessage({
+    }, simplex || (simplex = new SimplexNoise(e.seed || Math.random().toString()), 
+    s.state = {
+        simplex: simplex
+    }), o = e.levels || 1, recurseSection.call(s, e.section, o), postMessage({
         vertices: s.vertices
     }));
 });

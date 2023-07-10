@@ -178,7 +178,7 @@ function getSubSquares(props) {
         bottomRight,
         vertexIndex: props.vertexIndex,
     })];
-    center = generator.call(this, newVertices, newVertices.map((v) => this.state.simplex.noise2D(v.pos[0], v.pos[2])));
+    center = generator.call(this, newVertices, newVertices.map((v) => this.state.simplex.noise2D(v.pos[0] / 10, v.pos[2] / 10)));
     return newVertices;
 }
 function bilinearInterpolation(props) {

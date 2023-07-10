@@ -13,6 +13,7 @@ import { IRegisterProps, ITerrainosaurusProps } from "./interfaces";
 import { Terrainosaurus } from "./Terrainosaurus";
 
 const _terrainosaurusMap: Record<string, Terrainosaurus> = {};
+const CHUNKS_NUM = 16 * 16
 
 export function registerTerrainosaurusComponent(
   props: IRegisterProps,
@@ -60,7 +61,7 @@ export function registerTerrainosaurusComponent(
       terrainClient.recurseFullMap(4);
       // Create separate entities for each chunk
       this.chunks = [];
-      for (let i = 0; i < 64; i++) {
+      for (let i = 0; i < CHUNKS_NUM; i++) {
         this.chunks.push(document.createElement("a-entity"));
         const chunkGeometry = this.createGeometryComponent(
           terrainClient,
@@ -152,14 +153,14 @@ export function registerTerrainosaurusComponent(
       // Should be called after new vertices are calculated.
       // Creates new geometries and assigns them to the chunks.
       const terrainClient = _terrainosaurusMap[this.terrainosaurusId];
-      for (let i = 0; i < 64; i++) {
+      for (let i = 0; i < CHUNKS_NUM; i++) {
         setTimeout(() => {
           const chunkGeometry = this.createGeometryComponent(
             terrainClient,
             chunkIndexToQuadrantPath(i)
           );
           this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
-        }, i * 10)
+        }, i * 2)
       }
     },
     createGeometryComponent(
@@ -226,7 +227,7 @@ function getRandomId() {
   return typedArray.join("")
 }
 
-function chunkIndexToQuadrantPath(chunkIndex: number, chunkLevels: number = 3) {
+function chunkIndexToQuadrantPath(chunkIndex: number, chunkLevels: number = 4) {
   const chunksPerSide = 2 ** chunkLevels;
   const gridPos = [
     Math.floor(chunkIndex % chunksPerSide),
