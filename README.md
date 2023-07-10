@@ -126,3 +126,4 @@ yarn dev
 ![Terrainosaurus example output](/public/assets/images/composite_noise_fractal_terrain.png)
 ![Terrainosaurus example 2](/public/assets/images/terrainosaurus_example2.png)
 ![Terrainosaurus example 3](/public/assets/images/terrainosaurus_example3.png)
+![Terrainosaurus example 4](/public/assets/images/terrainosaurus_example4.png)
