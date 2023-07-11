@@ -1,6 +1,4 @@
 // @ts-ignore
-import "https://unpkg.com/three@0.144.0/build/three.min.js";
-// @ts-ignore
 import { SimplexNoise } from "https://unpkg.com/simplex-noise-esm@2.5.0-esm.0/dist-esm/simplex-noise.js";
 let simplex = null;
 const VERTICES_PER_SQUARE = 6;
@@ -13,8 +11,6 @@ self.addEventListener("message", ({ data }) => {
             genParams: data.genParams,
             generators: data.generators.map((f) => reconstructFunction(f)),
             generatorSelector: reconstructFunction(data.generatorSelector),
-            // @ts-ignore
-            THREE,
         };
         if (!simplex) {
             simplex = new SimplexNoise(data.seed || Math.random().toString());
@@ -178,7 +174,7 @@ function getSubSquares(props) {
         bottomRight,
         vertexIndex: props.vertexIndex,
     })];
-    center = generator.call(this, newVertices, newVertices.map((v) => this.state.simplex.noise2D(v.pos[0] / 10, v.pos[2] / 10)));
+    center = generator.call(this, newVertices, newVertices.map((v) => this.state.simplex.noise2D(v.pos[0] / this.genParams.noiseSampleCoeff, v.pos[2] / this.genParams.noiseSampleCoeff)));
     return newVertices;
 }
 function bilinearInterpolation(props) {

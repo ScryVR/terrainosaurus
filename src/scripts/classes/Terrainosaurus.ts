@@ -56,11 +56,12 @@ export class Terrainosaurus {
       paramSeed += paramSeed;
     }
     this.genParams = {
-      islandSize: Number(`${paramSeed[0]}`) * 4 + 5 || 20,
+      islandSize: Number(`${paramSeed[0]}`) * 6 + 5 || 20,
       landmassSlope: Number(`${paramSeed[1]}`) * 4 + 5 || 25,
       maxHeight: Number(`${paramSeed[2]}`) / 15 || 0.2,
       smoothness: (Number(`${paramSeed[3]}`) + 1) * 0.2 || 1,
-      plateauFactor: Number(`${paramSeed[4]}`) * 0.1 - 0.5 || 0.5,
+      plateauFactor: Number(`${paramSeed[4]}`) * 6 + 5 || 20,
+      noiseSampleCoeff: Math.ceil(Number(`${paramSeed[5]}`) / 4) + 1,
     };
   }
 
@@ -346,7 +347,12 @@ export class Terrainosaurus {
     generator.call(
       this,
       newVertices,
-      newVertices.map((v: any) => this.state.simplex.noise2D(v.pos[0], v.pos[2]))
+      newVertices.map((v: any) =>
+        this.state.simplex.noise2D(
+          v.pos[0] / this.genParams.noiseSampleCoeff,
+          v.pos[2] / this.genParams.noiseSampleCoeff
+        )
+      )
     );
     return newVertices;
   }

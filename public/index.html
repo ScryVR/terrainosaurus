@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
   </head>
   <body>
-    <a-scene fog="type: exponential; color: #AAA; density: 0.01;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: true; physicallyCorrectLights: true;">
+    <a-scene fog="type: linear; color: #AAA; density: 0.01;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: true; physicallyCorrectLights: true;">
       <a-assets>
         <img id="grassTexture" src="./assets/images/rock.jpg" crossorigin="anonymous" />
       </a-assets>
@@ -26,6 +26,7 @@
           position="0 0 0"
           scale="12 12 12"
           material="shader: standard; side: double; wireframe: false;"
+          animation="to: 0 360 0; property: rotation; dur: 60000; loop: true; easing: linear;"
           >
         </a-entity>
       </a-entity>
@@ -37,7 +38,8 @@
           cameraHead: #head;
           collisionEntities: .terrainosaurus-chunk;
           ignoreEntities: .clickable"
-        position="0 50 30"
+        position="0 150 150"
+        rotation="-60 0 0"
         movement-controls="controls: keyboard; constrainToNavMesh: true"
       >
         <a-entity camera
@@ -66,10 +68,12 @@
           wrapper: "#wrapper",
           seed: searchParams.get("id") || Math.random(),
           cameraHeight: 1.5,
-        })
-      document.querySelector("[cursor-teleport")?.setAttribute("cursor-teleport", {
-        collisionEntities: ".terrainosaurus-chunk"
-      })
+          gravityEnabled: false
+        }
+      )
+      // document.querySelector("[cursor-teleport")?.setAttribute("cursor-teleport", {
+      //   collisionEntities: ".terrainosaurus-chunk"
+      // })
     </script>
   </body>
 </html>

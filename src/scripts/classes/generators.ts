@@ -71,8 +71,7 @@ export const defaultGenerators: Array<(...args: any) => any> = [
         ].includes(key)
       ) {
         // const fractalDisplacement =
-        //   (randomValues[indices[0]] * squareSize) /
-        //   Math.pow(vertices[0].recursions + 1, 0.6);
+        //   (randomValues[indices[0]] * squareSize)
         const fractalDisplacement = randomValues[indices[0]] * Math.pow(Math.abs(squareSize), 0.8) / this.genParams.smoothness / 2
         indices.forEach((index) => {
           const noise = compositeNoise(vertices[index], this.state.simplex, this.genParams)
@@ -129,12 +128,12 @@ export const defaultGenerators: Array<(...args: any) => any> = [
       continentNoise = spline(
         continentNoise,
         genParams.landmassSlope *
-          sampleNoise(genParams.islandSize / 2, 100),
+          sampleNoise(genParams.islandSize, 40),
         genParams.maxHeight
       );
   
-      const plateauNoise = genParams.smoothness * sampleNoise(genParams.plateauFactor * 5, -200);
-      return continentNoise * plateauNoise + 0.2 * genParams.plateauFactor * plateauNoise
+      const plateauNoise = genParams.smoothness * sampleNoise(genParams.plateauFactor, -200);
+      return Math.max(-2, Math.min(2, continentNoise)) * spline(plateauNoise, genParams.plateauFactor)
     }
   },
 ];

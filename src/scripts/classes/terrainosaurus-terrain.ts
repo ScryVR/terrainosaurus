@@ -63,12 +63,15 @@ export function registerTerrainosaurusComponent(
       this.chunks = [];
       for (let i = 0; i < CHUNKS_NUM; i++) {
         this.chunks.push(document.createElement("a-entity"));
-        const chunkGeometry = this.createGeometryComponent(
+        let chunkGeometry;
+        chunkGeometry = this.createGeometryComponent(
           terrainClient,
           chunkIndexToQuadrantPath(i)
-        );
+          );
         this.chunks[i].classList.add("terrainosaurus-chunk");
-        this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
+        if (terrainClient.vertices[0].recursions > 3 || !i) {
+          this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
+        }
         if (this.data.src) {
           this.chunks[i].setAttribute("material", {
             side: "double",
@@ -159,7 +162,9 @@ export function registerTerrainosaurusComponent(
             terrainClient,
             chunkIndexToQuadrantPath(i)
           );
-          this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
+          if (terrainClient.vertices[0].recursions > 3 || !i) {
+            this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
+          }
         }, i * 2)
       }
     },
@@ -170,8 +175,14 @@ export function registerTerrainosaurusComponent(
       const name = `terrainosaurus-${getRandomId()}`;
       registerGeometry(name, {
         init() {
+          let vertices;
+          if (terrainClient.vertices[0].recursions < 4) {
+            vertices = terrainClient.vertices
+          } else {
+            vertices = terrainClient.getSection(path).vertices
+          }
           const geometry = terrainClient.createGeometry(
-            terrainClient.getSection(path).vertices
+            vertices
           );
           geometry.computeBoundingSphere();
           geometry.computeVertexNormals();
