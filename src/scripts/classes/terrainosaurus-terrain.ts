@@ -9,7 +9,7 @@
 
 import { AFrame, utils } from "aframe";
 import { Raycaster, Vector3 } from "three";
-import { IRegisterProps, ITerrainosaurusProps } from "./interfaces";
+import { IRegisterProps, ITerrainosaurusProps, IVertex } from "./interfaces";
 import { Terrainosaurus } from "./Terrainosaurus";
 
 const _terrainosaurusMap: Record<string, Terrainosaurus> = {};
@@ -37,6 +37,23 @@ export function registerTerrainosaurusComponent(
       waterLevel: { type: "number" },
       noCollisionWrapper: { type: "string" },
       pVal: { type: "number", default: 0.4 },
+    },
+    applyTerraform(event: CustomEvent, chunkIndex: number) {
+      // TODO: Figure out which chunks need to be rerendered and only rerender those.
+      //       For now, I'm just rerendering the entire geometry :O
+      const transformFilter = (x: number, z: number) => {
+        return event.detail.vertices.some((v: IVertex) => {
+          v.pos[0] === x && v.pos[2] === z
+        })
+      }
+      const transformer = ([x, y, z]: Array<number>) => {
+        const { xShift, newY, zShift } = event.detail
+        return [x + xShift, newY, z + zShift]
+      }
+      this.updateChunkGeometries(
+        transformFilter,
+        transformer
+      )
     },
     init() {
       // Initialize the terrainosaurus client in such a way that the memory-intensive
@@ -87,20 +104,7 @@ export function registerTerrainosaurusComponent(
             roughness: 1,
           });
         }
-        this.chunks[i].addEventListener("click", (event: CustomEvent) => {
-          let { x: scaledX, z: scaledZ } = event.detail.intersection.point
-          scaledX /= this.el.object3D.scale.x
-          scaledZ /= this.el.object3D.scale.z
-          this.updateChunkGeometries(
-            (x: number, z: number) => {
-              return Math.abs(x - scaledX) < 0.12 && Math.abs(z - scaledZ) < 0.12
-            },
-            ([x, y, z]: Array<number>, index: number) => {
-              // terrainClient.vertices[index].pos[1] = y + 0.3
-              return [x, Math.round(y * 10) / 10 - 0.1, z]
-            }
-          )
-        })
+        this.chunks[i].addEventListener("terraform", (event: CustomEvent) => this.applyTerraform(event))
         this.el.appendChild(this.chunks[i]);
       }
       if (!this.data.lowDetail) {
