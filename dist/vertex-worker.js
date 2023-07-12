@@ -1,5 +1,3 @@
-import "https://unpkg.com/three@0.144.0/build/three.min.js";
-
 import {
     SimplexNoise
 } from "https://unpkg.com/simplex-noise-esm@2.5.0-esm.0/dist-esm/simplex-noise.js";
@@ -36,46 +34,46 @@ function recursivelyGenerate(e) {
 }
 
 function getSubSquares(e) {
-    var s = e["recursions"], [ o, t, r, , , n ] = e.vertices, p = bilinearInterpolation({
+    var s = e["recursions"], [ o, t, n, , , r ] = e.vertices, p = bilinearInterpolation({
         p1: o,
         p2: t,
-        p3: r,
-        p4: n
+        p3: n,
+        p4: r
     }), s = vertexGenerator(s), p = [ {
         pos: [ p.x, p.y, p.z ],
         ...s.next().value
     }, {
-        pos: [ n.pos[0], (n.pos[1] + t.pos[1]) / 2, p.z ],
+        pos: [ r.pos[0], (r.pos[1] + t.pos[1]) / 2, p.z ],
         ...s.next().value
     }, {
-        pos: [ p.x, (n.pos[1] + r.pos[1]) / 2, n.pos[2] ],
+        pos: [ p.x, (r.pos[1] + n.pos[1]) / 2, r.pos[2] ],
         ...s.next().value
     }, {
-        pos: [ p.x, (n.pos[1] + r.pos[1]) / 2, n.pos[2] ],
+        pos: [ p.x, (r.pos[1] + n.pos[1]) / 2, r.pos[2] ],
         ...s.next().value
     }, {
-        pos: [ n.pos[0], (n.pos[1] + t.pos[1]) / 2, p.z ],
+        pos: [ r.pos[0], (r.pos[1] + t.pos[1]) / 2, p.z ],
+        ...s.next().value
+    }, {
+        ...r,
+        ...s.next().value
+    }, {
+        pos: [ n.pos[0], (n.pos[1] + o.pos[1]) / 2, p.z ],
+        ...s.next().value
+    }, {
+        pos: [ p.x, p.y, p.z ],
         ...s.next().value
     }, {
         ...n,
         ...s.next().value
     }, {
-        pos: [ r.pos[0], (r.pos[1] + o.pos[1]) / 2, p.z ],
+        ...n,
         ...s.next().value
     }, {
         pos: [ p.x, p.y, p.z ],
         ...s.next().value
     }, {
-        ...r,
-        ...s.next().value
-    }, {
-        ...r,
-        ...s.next().value
-    }, {
-        pos: [ p.x, p.y, p.z ],
-        ...s.next().value
-    }, {
-        pos: [ p.x, (n.pos[1] + r.pos[1]) / 2, r.pos[2] ],
+        pos: [ p.x, (r.pos[1] + n.pos[1]) / 2, n.pos[2] ],
         ...s.next().value
     }, {
         pos: [ p.x, (t.pos[1] + o.pos[1]) / 2, t.pos[2] ],
@@ -93,7 +91,7 @@ function getSubSquares(e) {
         ...t,
         ...s.next().value
     }, {
-        pos: [ n.pos[0], (n.pos[1] + t.pos[1]) / 2, p.z ],
+        pos: [ r.pos[0], (r.pos[1] + t.pos[1]) / 2, p.z ],
         ...s.next().value
     }, {
         ...o,
@@ -102,10 +100,10 @@ function getSubSquares(e) {
         pos: [ p.x, (t.pos[1] + o.pos[1]) / 2, t.pos[2] ],
         ...s.next().value
     }, {
-        pos: [ r.pos[0], (r.pos[1] + o.pos[1]) / 2, p.z ],
+        pos: [ n.pos[0], (n.pos[1] + o.pos[1]) / 2, p.z ],
         ...s.next().value
     }, {
-        pos: [ r.pos[0], (r.pos[1] + o.pos[1]) / 2, p.z ],
+        pos: [ n.pos[0], (n.pos[1] + o.pos[1]) / 2, p.z ],
         ...s.next().value
     }, {
         pos: [ p.x, (t.pos[1] + o.pos[1]) / 2, t.pos[2] ],
@@ -115,12 +113,12 @@ function getSubSquares(e) {
         ...s.next().value
     } ];
     this.generators[this.generatorSelector({
-        topLeft: n,
-        topRight: r,
+        topLeft: r,
+        topRight: n,
         bottomLeft: t,
         bottomRight: o,
         vertexIndex: e.vertexIndex
-    })].call(this, p, p.map(e => this.state.simplex.noise2D(e.pos[0] / 10, e.pos[2] / 10)));
+    })].call(this, p, p.map(e => this.state.simplex.noise2D(e.pos[0] / this.genParams.noiseSampleCoeff, e.pos[2] / this.genParams.noiseSampleCoeff)));
     return p;
 }
 
@@ -130,9 +128,9 @@ function bilinearInterpolation(e) {
         p2: s,
         p3: o,
         p4: t,
-        isCentroid: r = !0
+        isCentroid: n = !0
     } = e;
-    if (r) return {
+    if (n) return {
         x: (e.pos[0] + s.pos[0] + o.pos[0] + t.pos[0]) / 4,
         y: (e.pos[1] + s.pos[1] + o.pos[1] + t.pos[1]) / 4,
         z: (e.pos[2] + s.pos[2] + o.pos[2] + t.pos[2]) / 4
@@ -150,8 +148,7 @@ self.addEventListener("message", ({
         vertices: e.section.vertices,
         genParams: e.genParams,
         generators: e.generators.map(e => reconstructFunction(e)),
-        generatorSelector: reconstructFunction(e.generatorSelector),
-        THREE: THREE
+        generatorSelector: reconstructFunction(e.generatorSelector)
     }, simplex || (simplex = new SimplexNoise(e.seed || Math.random().toString()), 
     s.state = {
         simplex: simplex

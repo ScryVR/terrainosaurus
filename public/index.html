@@ -26,7 +26,6 @@
           position="0 0 0"
           scale="12 12 12"
           material="shader: standard; side: double; wireframe: false;"
-          animation="to: 0 360 0; property: rotation; dur: 60000; loop: true; easing: linear;"
           >
         </a-entity>
       </a-entity>
@@ -38,8 +37,7 @@
           cameraHead: #head;
           collisionEntities: .terrainosaurus-chunk;
           ignoreEntities: .clickable"
-        position="0 150 150"
-        rotation="-60 0 0"
+        position="0 150 30"
         movement-controls="controls: keyboard; constrainToNavMesh: true"
       >
         <a-entity camera
@@ -68,7 +66,7 @@
           wrapper: "#wrapper",
           seed: searchParams.get("id") || Math.random(),
           cameraHeight: 1.5,
-          gravityEnabled: false
+          gravityEnabled: true
         }
       )
       // document.querySelector("[cursor-teleport")?.setAttribute("cursor-teleport", {

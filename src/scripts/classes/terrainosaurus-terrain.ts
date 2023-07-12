@@ -87,6 +87,20 @@ export function registerTerrainosaurusComponent(
             roughness: 1,
           });
         }
+        this.chunks[i].addEventListener("click", (event: CustomEvent) => {
+          let { x: scaledX, z: scaledZ } = event.detail.intersection.point
+          scaledX /= this.el.object3D.scale.x
+          scaledZ /= this.el.object3D.scale.z
+          this.updateChunkGeometries(
+            (x: number, z: number) => {
+              return Math.abs(x - scaledX) < 0.12 && Math.abs(z - scaledZ) < 0.12
+            },
+            ([x, y, z]: Array<number>, index: number) => {
+              // terrainClient.vertices[index].pos[1] = y + 0.3
+              return [x, Math.round(y * 10) / 10 - 0.1, z]
+            }
+          )
+        })
         this.el.appendChild(this.chunks[i]);
       }
       if (!this.data.lowDetail) {
@@ -152,7 +166,7 @@ export function registerTerrainosaurusComponent(
       );
       this.handleIntersection();
     },
-    updateChunkGeometries() {
+    updateChunkGeometries(transformFilter: Function, transformer: Function) {
       // Should be called after new vertices are calculated.
       // Creates new geometries and assigns them to the chunks.
       const terrainClient = _terrainosaurusMap[this.terrainosaurusId];
@@ -160,7 +174,9 @@ export function registerTerrainosaurusComponent(
         setTimeout(() => {
           const chunkGeometry = this.createGeometryComponent(
             terrainClient,
-            chunkIndexToQuadrantPath(i)
+            chunkIndexToQuadrantPath(i),
+            transformFilter,
+            transformer
           );
           if (terrainClient.vertices[0].recursions > 3 || !i) {
             this.chunks[i].setAttribute("geometry", { primitive: chunkGeometry });
@@ -170,19 +186,21 @@ export function registerTerrainosaurusComponent(
     },
     createGeometryComponent(
       terrainClient: Terrainosaurus,
-      path: Array<1 | 2 | 3 | 4>
+      path: Array<1 | 2 | 3 | 4>,
+      transformFilter: Function,
+      transformer: Function
     ) {
       const name = `terrainosaurus-${getRandomId()}`;
       registerGeometry(name, {
         init() {
-          let vertices;
+          let section = terrainClient.getSection(path)
           if (terrainClient.vertices[0].recursions < 4) {
-            vertices = terrainClient.vertices
-          } else {
-            vertices = terrainClient.getSection(path).vertices
+            section = { vertices: terrainClient.vertices, absoluteIndex: 0 }
           }
           const geometry = terrainClient.createGeometry(
-            vertices
+            section,
+            transformFilter,
+            transformer
           );
           geometry.computeBoundingSphere();
           geometry.computeVertexNormals();

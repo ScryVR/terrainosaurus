@@ -12,11 +12,11 @@ import {
 const VERTICES_PER_SQUARE = 6; // This will change to 4 if/when we do some memory optimizations
 
 export class Terrainosaurus {
-  THREE: any;
   size: number;
   seed: string;
   offset: number;
   vertices: Array<IVertex>;
+  transformedVertices: Array<IVertex>;
   indices: Array<number>;
   state: any;
   colors?: Record<string, Array<number>>;
@@ -29,6 +29,7 @@ export class Terrainosaurus {
 
   constructor(props: ITerrainosaurusProps) {
     this.vertices = [];
+    this.transformedVertices = [];
     this.state = props.state || {};
     this.indices = [];
     this.size = props.size;
@@ -43,7 +44,6 @@ export class Terrainosaurus {
     this.waterLevel = props.waterLevel;
     this.state.simplex = new SimplexNoise(this.seed);
     this.setInitialVertices(this.offset);
-    this.THREE = { Vector3 };
   }
 
   setGenerationParameters() {
@@ -109,20 +109,22 @@ export class Terrainosaurus {
           "Cannot recurse in background - vertexWorkerUrl not provided in constructor"
         );
       }
-      const vertexWorker = new Worker(this.vertexWorkerUrl, { type: "module" });
+      this.vertexWorker = new Worker(this.vertexWorkerUrl, { type: "module" });
       const spliceParams = {
         start: section.absoluteIndex,
         end: section.vertices.length,
       };
-      vertexWorker.onmessage = (event) => {
-        this.vertices.splice(
-          spliceParams.start,
-          spliceParams.end,
-          ...event.data.vertices
-        );
-        resolve(event.data.geometry);
+      this.vertexWorker.onmessage = (event) => {
+        if (event.data.vertices) {
+          this.vertices.splice(
+            spliceParams.start,
+            spliceParams.end,
+            ...event.data.vertices
+          );
+        }
+        resolve(true);
       };
-      vertexWorker.postMessage({
+      this.vertexWorker.postMessage({
         action: "recurseSection",
         seed: this.seed,
         colors: this.colors,
@@ -135,6 +137,7 @@ export class Terrainosaurus {
       });
     });
   }
+
   recursivelyGenerate(vertexIndex: number) {
     /**
      * Replaces a given square with 4 smaller squares.
@@ -356,7 +359,9 @@ export class Terrainosaurus {
     );
     return newVertices;
   }
-  createGeometry(section: Array<IVertex> = this.vertices) {
+  createGeometry(section: ISection = { vertices: this.vertices, absoluteIndex: 0 }, transformerFilter?: Function, transformer?: Function) {
+    transformerFilter ||= () => false
+    transformer ||= (v: any) => v
     // When called, generates a BufferGeometry out of the current vertices
     const geometry = new BufferGeometry();
     const positionNumComponents = 3;
@@ -364,9 +369,16 @@ export class Terrainosaurus {
     const uvNumComponents = 2;
     const colorNumComponents = 3;
     // Get vertex data in nice parallel arrays
-    const { positions, normals, uvs, colors } = section.reduce(
-      (acc: any, vertex) => {
-        acc.positions = acc.positions.concat(vertex.pos);
+    const { positions, normals, uvs, colors } = section.vertices.reduce(
+      (acc: any, vertex, index) => {
+        const _vertex = this.transformedVertices[index + section.absoluteIndex] || vertex
+        if (transformerFilter(_vertex.pos[0], _vertex.pos[2])) {
+          const transformedPos = transformer(_vertex.pos)
+          this.transformedVertices[index + section.absoluteIndex] = { ..._vertex, pos: transformedPos }
+          acc.positions = acc.positions.concat(transformedPos);
+        } else {
+          acc.positions = acc.positions.concat(_vertex.pos);
+        }
         acc.normals = acc.normals.concat(vertex.norm);
         acc.uvs = acc.uvs.concat(vertex.uv);
         acc.colors = acc.colors.concat(vertex.color);
