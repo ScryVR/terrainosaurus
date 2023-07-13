@@ -1,7 +1,6 @@
 import {
     BufferGeometry,
-    Float32BufferAttribute,
-    Vector3
+    Float32BufferAttribute
 } from "three";
 
 import {
@@ -16,29 +15,13 @@ import {
 const VERTICES_PER_SQUARE = 6;
 
 class Terrainosaurus {
-    THREE;
-    size;
-    seed;
-    offset;
-    vertices;
-    indices;
-    state;
-    colors;
-    waterLevel;
-    generators;
-    generatorSelector;
-    vertexWorker;
-    vertexWorkerUrl;
-    genParams;
     constructor(e) {
-        this.vertices = [], this.state = e.state || {}, this.indices = [], this.size = e.size, 
-        this.offset = e.size / 2, this.generatorSelector = e.generatorSelector || defaultGeneratorSelector, 
+        this.vertices = [], this.transformedVertices = [], this.state = e.state || {}, 
+        this.indices = [], this.size = e.size, this.offset = e.size / 2, this.generatorSelector = e.generatorSelector || defaultGeneratorSelector, 
         this.generators = e.generators || defaultGenerators, this.vertexWorkerUrl = e.vertexWorkerUrl, 
         this.seed = e.seed, this.setGenerationParameters(), this.colors = e.colors, 
         this.waterLevel = e.waterLevel, this.state.simplex = new SimplexNoise(this.seed), 
-        this.setInitialVertices(this.offset), this.THREE = {
-            Vector3: Vector3
-        };
+        this.setInitialVertices(this.offset);
     }
     setGenerationParameters() {
         this.seed || (this.seed = Math.random().toString().replace("0.", ""));
@@ -100,17 +83,18 @@ class Terrainosaurus {
     }
     async recurseSectionInBackground(r, o = 1) {
         return new Promise((s, e) => {
-            this.vertexWorkerUrl || e("Cannot recurse in background - vertexWorkerUrl not provided in constructor");
-            e = new Worker(this.vertexWorkerUrl, {
+            this.vertexWorkerUrl || e("Cannot recurse in background - vertexWorkerUrl not provided in constructor"), 
+            this.vertexWorker = new Worker(this.vertexWorkerUrl, {
                 type: "module"
             });
             const t = {
                 start: r.absoluteIndex,
                 end: r.vertices.length
             };
-            e.onmessage = e => {
-                this.vertices.splice(t.start, t.end, ...e.data.vertices), s(e.data.geometry);
-            }, e.postMessage({
+            this.vertexWorker.onmessage = e => {
+                e.data.vertices && this.vertices.splice(t.start, t.end, ...e.data.vertices), 
+                s(!0);
+            }, this.vertexWorker.postMessage({
                 action: "recurseSection",
                 seed: this.seed,
                 colors: this.colors,
@@ -141,117 +125,128 @@ class Terrainosaurus {
             vertices: this.vertices,
             absoluteIndex: 0
         }, e.reduce((e, s, t) => {
-            var t = t + 1, r = Math.pow(4, e.vertices[0].recursions - t) * VERTICES_PER_SQUARE, o = r + Math.pow(4, e.vertices[r].recursions - t) * VERTICES_PER_SQUARE, n = o + Math.pow(4, e.vertices[o].recursions - t) * VERTICES_PER_SQUARE, r = [ 0, r, o, n, n + Math.pow(4, e.vertices[o].recursions - t) * VERTICES_PER_SQUARE ];
+            var t = t + 1, r = Math.pow(4, e.vertices[0].recursions - t) * VERTICES_PER_SQUARE, o = r + Math.pow(4, e.vertices[r].recursions - t) * VERTICES_PER_SQUARE, i = o + Math.pow(4, e.vertices[o].recursions - t) * VERTICES_PER_SQUARE, r = [ 0, r, o, i, i + Math.pow(4, e.vertices[o].recursions - t) * VERTICES_PER_SQUARE ];
             return e.vertices = e.vertices.slice(r[(s = s < 3 ? s % 2 + 1 : s) - 1], r[s]), 
             e.absoluteIndex += r[s - 1], e;
         }, s);
     }
     getSubSquares(e) {
-        var s = e["recursions"], [ t, r, o, , , n ] = e.vertices, i = bilinearInterpolation({
+        var s = e["recursions"], [ t, r, o, , , i ] = e.vertices, n = bilinearInterpolation({
             p1: t,
             p2: r,
             p3: o,
-            p4: n
-        }), s = vertexGenerator(s), i = [ {
-            pos: [ i.x, i.y, i.z ],
+            p4: i
+        }), s = vertexGenerator(s), n = [ {
+            pos: [ n.x, n.y, n.z ],
             ...s.next().value
         }, {
-            pos: [ n.pos[0], (n.pos[1] + r.pos[1]) / 2, i.z ],
+            pos: [ i.pos[0], (i.pos[1] + r.pos[1]) / 2, n.z ],
             ...s.next().value
         }, {
-            pos: [ i.x, (n.pos[1] + o.pos[1]) / 2, n.pos[2] ],
+            pos: [ n.x, (i.pos[1] + o.pos[1]) / 2, i.pos[2] ],
             ...s.next().value
         }, {
-            pos: [ i.x, (n.pos[1] + o.pos[1]) / 2, n.pos[2] ],
+            pos: [ n.x, (i.pos[1] + o.pos[1]) / 2, i.pos[2] ],
             ...s.next().value
         }, {
-            pos: [ n.pos[0], (n.pos[1] + r.pos[1]) / 2, i.z ],
+            pos: [ i.pos[0], (i.pos[1] + r.pos[1]) / 2, n.z ],
             ...s.next().value
         }, {
-            ...n,
+            ...i,
             ...s.next().value
         }, {
-            pos: [ o.pos[0], (o.pos[1] + t.pos[1]) / 2, i.z ],
+            pos: [ o.pos[0], (o.pos[1] + t.pos[1]) / 2, n.z ],
             ...s.next().value
         }, {
-            pos: [ i.x, i.y, i.z ],
-            ...s.next().value
-        }, {
-            ...o,
+            pos: [ n.x, n.y, n.z ],
             ...s.next().value
         }, {
             ...o,
             ...s.next().value
         }, {
-            pos: [ i.x, i.y, i.z ],
+            ...o,
             ...s.next().value
         }, {
-            pos: [ i.x, (n.pos[1] + o.pos[1]) / 2, o.pos[2] ],
+            pos: [ n.x, n.y, n.z ],
             ...s.next().value
         }, {
-            pos: [ i.x, (r.pos[1] + t.pos[1]) / 2, r.pos[2] ],
+            pos: [ n.x, (i.pos[1] + o.pos[1]) / 2, o.pos[2] ],
             ...s.next().value
         }, {
-            ...r,
-            ...s.next().value
-        }, {
-            pos: [ i.x, i.y, i.z ],
-            ...s.next().value
-        }, {
-            pos: [ i.x, i.y, i.z ],
+            pos: [ n.x, (r.pos[1] + t.pos[1]) / 2, r.pos[2] ],
             ...s.next().value
         }, {
             ...r,
             ...s.next().value
         }, {
-            pos: [ n.pos[0], (n.pos[1] + r.pos[1]) / 2, i.z ],
+            pos: [ n.x, n.y, n.z ],
+            ...s.next().value
+        }, {
+            pos: [ n.x, n.y, n.z ],
+            ...s.next().value
+        }, {
+            ...r,
+            ...s.next().value
+        }, {
+            pos: [ i.pos[0], (i.pos[1] + r.pos[1]) / 2, n.z ],
             ...s.next().value
         }, {
             ...t,
             ...s.next().value
         }, {
-            pos: [ i.x, (r.pos[1] + t.pos[1]) / 2, r.pos[2] ],
+            pos: [ n.x, (r.pos[1] + t.pos[1]) / 2, r.pos[2] ],
             ...s.next().value
         }, {
-            pos: [ o.pos[0], (o.pos[1] + t.pos[1]) / 2, i.z ],
+            pos: [ o.pos[0], (o.pos[1] + t.pos[1]) / 2, n.z ],
             ...s.next().value
         }, {
-            pos: [ o.pos[0], (o.pos[1] + t.pos[1]) / 2, i.z ],
+            pos: [ o.pos[0], (o.pos[1] + t.pos[1]) / 2, n.z ],
             ...s.next().value
         }, {
-            pos: [ i.x, (r.pos[1] + t.pos[1]) / 2, r.pos[2] ],
+            pos: [ n.x, (r.pos[1] + t.pos[1]) / 2, r.pos[2] ],
             ...s.next().value
         }, {
-            pos: [ i.x, i.y, i.z ],
+            pos: [ n.x, n.y, n.z ],
             ...s.next().value
         } ];
         return this.generators[this.generatorSelector({
-            topLeft: n,
+            topLeft: i,
             topRight: o,
             bottomLeft: r,
             bottomRight: t,
             vertexIndex: e.vertexIndex
-        })].call(this, i, i.map(e => this.state.simplex.noise2D(e.pos[0] / this.genParams.noiseSampleCoeff, e.pos[2] / this.genParams.noiseSampleCoeff))), 
-        i;
+        })].call(this, n, n.map(e => this.state.simplex.noise2D(e.pos[0] / this.genParams.noiseSampleCoeff, e.pos[2] / this.genParams.noiseSampleCoeff))), 
+        n;
     }
-    createGeometry(e = this.vertices) {
-        var s = new BufferGeometry(), {
-            positions: e,
+    createGeometry(i = {
+        vertices: this.vertices,
+        absoluteIndex: 0
+    }, n, a) {
+        n = n || (() => !1), a = a || (e => e);
+        var e = new BufferGeometry(), {
+            positions: s,
             normals: t,
             uvs: r,
             colors: o
-        } = e.reduce((e, s) => (e.positions = e.positions.concat(s.pos), e.normals = e.normals.concat(s.norm), 
-        e.uvs = e.uvs.concat(s.uv), e.colors = e.colors.concat(s.color), e), {
+        } = i.vertices.reduce((e, s, t) => {
+            var r, o = this.transformedVertices[t + i.absoluteIndex] || s;
+            return n(o.pos[0], o.pos[2]) ? (r = a(o.pos), this.transformedVertices[t + i.absoluteIndex] = {
+                ...o,
+                pos: r
+            }, e.positions = e.positions.concat(r)) : e.positions = e.positions.concat(o.pos), 
+            e.normals = e.normals.concat(s.norm), e.uvs = e.uvs.concat(s.uv), e.colors = e.colors.concat(s.color), 
+            e;
+        }, {
             positions: [],
             normals: [],
             uvs: [],
             colors: []
         });
-        return s.setAttribute("position", new Float32BufferAttribute(new Float32Array(e), 3)), 
-        s.setAttribute("normal", new Float32BufferAttribute(new Float32Array(t), 3)), 
-        s.setAttribute("uv", new Float32BufferAttribute(new Float32Array(r), 2)), 
-        s.setAttribute("color", new Float32BufferAttribute(new Float32Array(o), 3)), 
-        s;
+        return e.setAttribute("position", new Float32BufferAttribute(new Float32Array(s), 3)), 
+        e.setAttribute("normal", new Float32BufferAttribute(new Float32Array(t), 3)), 
+        e.setAttribute("uv", new Float32BufferAttribute(new Float32Array(r), 2)), 
+        e.setAttribute("color", new Float32BufferAttribute(new Float32Array(o), 3)), 
+        e;
     }
 }
 

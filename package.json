@@ -1,6 +1,6 @@
 {
   "name": "terrainosaurus",
-  "version": "1.0.3",
+  "version": "1.1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/ScryVR/terrainosaurus.git"
@@ -37,7 +37,7 @@
     "dev": "npm-run-all -p dev:*",
     "build": "cross-env NODE_ENV=production webpack",
     "deploy": "aws --profile personal --recursive s3 cp --acl=public-read ./public s3://bernardo.lol/terrainosaurus",
-    "prepublishOnly": "tsc --outDir .build;  mv .build/src/scripts/classes/Terrainosaurus.js ./dist/Terrainosaurus.js; mv .build/src/scripts/classes/generators.js ./dist/generators.js; mv .build/src/scripts/classes/vertex-worker.js ./dist/vertex-worker.js; mv .build/src/scripts/classes/terrainosaurus-terrain.js ./dist/index.js; rm -rf .build; yarn compress",
+    "prepublishOnly": "tsc --outDir .build;  mv .build/src/scripts/Terrainosaurus.js ./dist/Terrainosaurus.js; mv .build/src/scripts/generators.js ./dist/generators.js; mv .build/src/scripts/vertex-worker.js ./dist/vertex-worker.js; mv .build/src/scripts/terrainosaurus-terrain.js ./dist/index.js; rm -rf .build; yarn compress",
     "compress": "for f in dist/*; do uglifyjs --beautify semicolons=false -m -c -o \"$f\" -- \"$f\"; done"
   },
   "peerDependencies": {
