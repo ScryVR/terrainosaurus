@@ -1,4 +1,23 @@
 /*!*************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[3].use[1]!./node_modules/postcss-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/styles/main.scss ***!
   \*************************************************************************************************************************************************************************************/
+.a-dom-overlay {
+  z-index: 1;
+  padding: 0; }
+
+#terraformerUi {
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 0;
+  display: none;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center; }
+
+#terraformBtn {
+  margin-bottom: 50px;
+  padding: 1em 2em; }
 

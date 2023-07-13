@@ -12,7 +12,7 @@ import { Raycaster, Vector3 } from "three";
 import { IRegisterProps, ITerrainosaurusProps, IVertex } from "./interfaces";
 import { Terrainosaurus } from "./Terrainosaurus";
 
-const _terrainosaurusMap: Record<string, Terrainosaurus> = {};
+export const terrainosaurusMap: Record<string, Terrainosaurus> = {};
 const CHUNKS_NUM = 16 * 16
 
 export function registerTerrainosaurusComponent(
@@ -27,7 +27,7 @@ export function registerTerrainosaurusComponent(
       cameraHeight: { type: "int", default: 1.5 },
       destroyClientOnRemoval: { type: "boolean", default: false },
       src: { type: "string" },
-      wrapper: { type: "string" },
+      wrapper: { type: "string", default: "a-scene" },
       lowDetail: { type: "boolean", default: false },
       grassColor: { type: "vec3", default: new Vector3(0.4, 0.8, 0.3) },
       dirtColor: { type: "vec3", default: new Vector3(0.7, 0.5, 0.3) },
@@ -38,17 +38,18 @@ export function registerTerrainosaurusComponent(
       noCollisionWrapper: { type: "string" },
       pVal: { type: "number", default: 0.4 },
     },
-    applyTerraform(event: CustomEvent, chunkIndex: number) {
+    applyTerraform(event: CustomEvent) {
       // TODO: Figure out which chunks need to be rerendered and only rerender those.
       //       For now, I'm just rerendering the entire geometry :O
       const transformFilter = (x: number, z: number) => {
-        return event.detail.vertices.some((v: IVertex) => {
-          v.pos[0] === x && v.pos[2] === z
+        const shouldTransform = event.detail.vertices.some((v: IVertex) => {
+          return v.pos[0] === x && v.pos[2] === z
         })
+        return shouldTransform
       }
       const transformer = ([x, y, z]: Array<number>) => {
-        const { xShift, newY, zShift } = event.detail
-        return [x + xShift, newY, z + zShift]
+        const { xShift, yShift, zShift } = event.detail
+        return [x + xShift, y + yShift, z + zShift]
       }
       this.updateChunkGeometries(
         transformFilter,
@@ -74,7 +75,7 @@ export function registerTerrainosaurusComponent(
 
       // Initialize chunks. For now, there is no control over the number of recursions, whether they happen in the background, etc.
       // Recurse until we get 8 chunks per side.
-      const terrainClient = _terrainosaurusMap[this.terrainosaurusId];
+      const terrainClient = terrainosaurusMap[this.terrainosaurusId];
       terrainClient.recurseFullMap(4);
       // Create separate entities for each chunk
       this.chunks = [];
@@ -104,7 +105,9 @@ export function registerTerrainosaurusComponent(
             roughness: 1,
           });
         }
-        this.chunks[i].addEventListener("terraform", (event: CustomEvent) => this.applyTerraform(event))
+        this.chunks[i].addEventListener("click", (event: CustomEvent) => {
+          this.el.dispatchEvent(new CustomEvent("chunkClicked", { detail: event.detail }))
+        })
         this.el.appendChild(this.chunks[i]);
       }
       if (!this.data.lowDetail) {
@@ -125,6 +128,8 @@ export function registerTerrainosaurusComponent(
       } else {
         this.el.dispatchEvent(new CustomEvent("terrainInitialized", { detail: { terrainClient }}))
       }
+      
+      this.el.addEventListener("terraform", (event: CustomEvent) => this.applyTerraform(event))
 
       // Set up stuff for terrain navigation
       this.camera = document.querySelector("[camera]");
@@ -150,8 +155,9 @@ export function registerTerrainosaurusComponent(
         this.displacementTarget = document.querySelector(this.data.wrapper);
         if (!this.displacementTarget) {
           console.warn(
-            "Terrainosaurus: Specified an invalid wrapper attribute - defaulting to moving self"
+          "Terrainosaurus: Specified an invalid wrapper attribute - defaulting to moving self"
           );
+          this.displacementTarget = this.el
         }
       }
       if (this.data.noCollisionWrapper) {
@@ -173,7 +179,7 @@ export function registerTerrainosaurusComponent(
     updateChunkGeometries(transformFilter: Function, transformer: Function) {
       // Should be called after new vertices are calculated.
       // Creates new geometries and assigns them to the chunks.
-      const terrainClient = _terrainosaurusMap[this.terrainosaurusId];
+      const terrainClient = terrainosaurusMap[this.terrainosaurusId];
       for (let i = 0; i < CHUNKS_NUM; i++) {
         setTimeout(() => {
           const chunkGeometry = this.createGeometryComponent(
@@ -242,7 +248,7 @@ export function registerTerrainosaurusComponent(
     // Clean up the Terrainosaurus client if the compnent gets deleted
     remove() {
       if (this.data.destroyClientOnRemoval) {
-        delete _terrainosaurusMap[this.terrainosaurusId];
+        delete terrainosaurusMap[this.terrainosaurusId];
       }
     },
   });
@@ -250,7 +256,7 @@ export function registerTerrainosaurusComponent(
 
 function addTerrainosaurusObjectToMap(props: ITerrainosaurusProps) {
   const randomId = getRandomId();
-  _terrainosaurusMap[randomId] = new Terrainosaurus(props);
+  terrainosaurusMap[randomId] = new Terrainosaurus(props);
   return randomId;
 }
 

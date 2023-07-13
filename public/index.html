@@ -3,11 +3,17 @@
   <head>
     <title>Terrainosaurus Demo</title>
     <link rel="icon" type="image/x-icon" href="./assets/images/icon.svg">
+    <link rel="stylesheet" href="./assets/styles/main.css">
     <script src="./assets/scripts/bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
   </head>
   <body>
-    <a-scene fog="type: linear; color: #AAA; density: 0.01;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: true; physicallyCorrectLights: true;">
+    <div id="overlay">
+      <div id="terraformerUi">
+        <button id="terraformBtn">Done</button>
+      </div>
+    </div>
+    <a-scene webxr="overlayElement: #overlay;" fog="type: linear; color: #AAA; density: 0.01;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: true; physicallyCorrectLights: true;">
       <a-assets>
         <img id="grassTexture" src="./assets/images/rock.jpg" crossorigin="anonymous" />
       </a-assets>
@@ -22,6 +28,7 @@
       <a-entity id="wrapper">
         <a-cylinder id="ocean" material="transparent: true; opacity: 0.4; color: cyan; side: double;" position="0 -210 0" scale="420 420 420"></a-cylinder>
         <a-entity
+          terraformer="gestureHandler: #terraformerUi; doneBtn: #terraformBtn;"
           id="terrain"
           position="0 0 0"
           scale="12 12 12"
@@ -31,13 +38,7 @@
       </a-entity>
       <a-entity
         id="cameraRig"
-        _cursor-teleport="
-          landingMaxAngle: 99999;
-          cameraRig: #cameraRig;
-          cameraHead: #head;
-          collisionEntities: .terrainosaurus-chunk;
-          ignoreEntities: .clickable"
-        position="0 150 30"
+        position="0 100 30"
         movement-controls="controls: keyboard; constrainToNavMesh: true"
       >
         <a-entity camera
@@ -47,12 +48,8 @@
         >
         </a-entity>
         <a-entity cursor="fuse: false; rayOrigin: mouse"
-          position="0 1.2 -2"
-          raycaster="objects: .terrainosaurus-chunk;"
-          _teleport-controls="
-            cameraRig: #cameraRig;
-            teleportOrigin: #head;
-            curveShootingSpeed: 8;">
+          position="0 1.2 0"
+          raycaster="objects: .terrainosaurus-chunk;">
       </a-entity>
       <a-sky color="#aae" material="fog: false;"></a-sky>
     </a-scene>

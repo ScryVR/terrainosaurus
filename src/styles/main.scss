@@ -1,0 +1,21 @@
+.a-dom-overlay {
+  z-index: 1;
+  padding: 0;
+}
+#terraformerUi {
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding: 0;
+  display: none;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+#terraformBtn {
+  margin-bottom: 50px;
+  padding: 1em 2em;
+}
