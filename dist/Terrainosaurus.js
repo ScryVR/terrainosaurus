@@ -229,11 +229,11 @@ class Terrainosaurus {
             uvs: r,
             colors: o
         } = i.vertices.reduce((e, s, t) => {
-            var r, o = this.transformedVertices[t + i.absoluteIndex] || s;
-            return n(o.pos[0], o.pos[2]) ? (r = a(o.pos), this.transformedVertices[t + i.absoluteIndex] = {
-                ...o,
-                pos: r
-            }, e.positions = e.positions.concat(r)) : e.positions = e.positions.concat(o.pos), 
+            var r = this.transformedVertices[t + i.absoluteIndex] || s, o = n(r.pos[0], r.pos[2]);
+            return o ? (o = a(r.pos, o), this.transformedVertices[t + i.absoluteIndex] = {
+                ...r,
+                pos: o
+            }, e.positions = e.positions.concat(o)) : e.positions = e.positions.concat(r.pos), 
             e.normals = e.normals.concat(s.norm), e.uvs = e.uvs.concat(s.uv), e.colors = e.colors.concat(s.color), 
             e;
         }, {

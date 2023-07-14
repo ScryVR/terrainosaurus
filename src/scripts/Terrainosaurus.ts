@@ -372,8 +372,9 @@ export class Terrainosaurus {
     const { positions, normals, uvs, colors } = section.vertices.reduce(
       (acc: any, vertex, index) => {
         const _vertex = this.transformedVertices[index + section.absoluteIndex] || vertex
-        if (transformerFilter(_vertex.pos[0], _vertex.pos[2])) {
-          const transformedPos = transformer(_vertex.pos)
+        const transformation = transformerFilter(_vertex.pos[0], _vertex.pos[2])
+        if (transformation) {
+          const transformedPos = transformer(_vertex.pos, transformation)
           this.transformedVertices[index + section.absoluteIndex] = { ..._vertex, pos: transformedPos }
           acc.positions = acc.positions.concat(transformedPos);
         } else {

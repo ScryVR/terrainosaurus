@@ -25,7 +25,7 @@ export function registerTerrainosaurusComponent(
       seed: { type: "int", default: 1 },
       size: { type: "int", default: 20 },
       cameraHeight: { type: "int", default: 1.5 },
-      destroyClientOnRemoval: { type: "boolean", default: false },
+      destroyClientOnRemoval: { type: "boolean", default: true },
       src: { type: "string" },
       wrapper: { type: "string", default: "a-scene" },
       lowDetail: { type: "boolean", default: false },
@@ -42,13 +42,13 @@ export function registerTerrainosaurusComponent(
       // TODO: Figure out which chunks need to be rerendered and only rerender those.
       //       For now, I'm just rerendering the entire geometry :O
       const transformFilter = (x: number, z: number) => {
-        const shouldTransform = event.detail.vertices.some((v: IVertex) => {
+        const match = event.detail.vertices.find((v: IVertex) => {
           return v.pos[0] === x && v.pos[2] === z
         })
-        return shouldTransform
+        return match?.transformation
       }
-      const transformer = ([x, y, z]: Array<number>) => {
-        const { xShift, yShift, zShift } = event.detail
+      const transformer = ([x, y, z]: Array<number>, transformation: Array<number>) => {
+        const [xShift, yShift, zShift] = transformation
         return [x + xShift, y + yShift, z + zShift]
       }
       this.updateChunkGeometries(

@@ -1,1 +1,208 @@
-import{SimplexNoise}from"https://unpkg.com/simplex-noise-esm@2.5.0-esm.0/dist-esm/simplex-noise.js";let simplex=null;const VERTICES_PER_SQUARE=6;function reconstructFunction(e){let s=(e=(e=(e=e.replace(/\S*__WEBPACK_IMPORTED_MODULE_\d+__./g,"")).replace("){","){\n")).replace(/}$/g,"\n}")).split("\n");s.pop();let o=s.shift();s=s.join("\n");let t=o.match(/\([^)]*\)/)[0];return t=t.replace("(","").replace(")","").split(","),Function(...t,s)}function recurseSection({vertices:e,absoluteIndex:s},o=1){for(let t=0;t<o;t++)for(let o=e.length-6;o>-1;o-=6)recursivelyGenerate.call(this,o+s)}function recursivelyGenerate(e){if(e%6)throw new Error("The given vertex does not represent the start of a cell");if(!this.vertices[e])return void console.warn(`Skipping recursion: Index ${e} exceeds bounds (${this.vertices.length})`);const s=this.vertices.slice(e,e+6),o=this.vertices[e].recursions+1;let t=getSubSquares.call(this,{vertices:s,recursions:o,vertexIndex:e});this.vertices.splice(e,6,...t)}function getSubSquares(e){const{recursions:s}=e,[o,t,n,r,p,i]=e.vertices;let l=bilinearInterpolation({p1:o,p2:t,p3:n,p4:i});const a=vertexGenerator(s),c=[{pos:[l.x,l.y,l.z],...a.next().value},{pos:[i.pos[0],(i.pos[1]+t.pos[1])/2,l.z],...a.next().value},{pos:[l.x,(i.pos[1]+n.pos[1])/2,i.pos[2]],...a.next().value},{pos:[l.x,(i.pos[1]+n.pos[1])/2,i.pos[2]],...a.next().value},{pos:[i.pos[0],(i.pos[1]+t.pos[1])/2,l.z],...a.next().value},{...i,...a.next().value},{pos:[n.pos[0],(n.pos[1]+o.pos[1])/2,l.z],...a.next().value},{pos:[l.x,l.y,l.z],...a.next().value},{...n,...a.next().value},{...n,...a.next().value},{pos:[l.x,l.y,l.z],...a.next().value},{pos:[l.x,(i.pos[1]+n.pos[1])/2,n.pos[2]],...a.next().value},{pos:[l.x,(t.pos[1]+o.pos[1])/2,t.pos[2]],...a.next().value},{...t,...a.next().value},{pos:[l.x,l.y,l.z],...a.next().value},{pos:[l.x,l.y,l.z],...a.next().value},{...t,...a.next().value},{pos:[i.pos[0],(i.pos[1]+t.pos[1])/2,l.z],...a.next().value},{...o,...a.next().value},{pos:[l.x,(t.pos[1]+o.pos[1])/2,t.pos[2]],...a.next().value},{pos:[n.pos[0],(n.pos[1]+o.pos[1])/2,l.z],...a.next().value},{pos:[n.pos[0],(n.pos[1]+o.pos[1])/2,l.z],...a.next().value},{pos:[l.x,(t.pos[1]+o.pos[1])/2,t.pos[2]],...a.next().value},{pos:[l.x,l.y,l.z],...a.next().value}];return l=this.generators[this.generatorSelector({topLeft:i,topRight:n,bottomLeft:t,bottomRight:o,vertexIndex:e.vertexIndex})].call(this,c,c.map((e=>this.state.simplex.noise2D(e.pos[0]/this.genParams.noiseSampleCoeff,e.pos[2]/this.genParams.noiseSampleCoeff)))),c}function bilinearInterpolation(e){const{p1:s,p2:o,p3:t,p4:n,isCentroid:r=!0}=e;if(r)return{x:(s.pos[0]+o.pos[0]+t.pos[0]+n.pos[0])/4,y:(s.pos[1]+o.pos[1]+t.pos[1]+n.pos[1])/4,z:(s.pos[2]+o.pos[2]+t.pos[2]+n.pos[2])/4};throw new Error("Oops, someone had better implement non-centroid bilinear interpolation")}self.addEventListener("message",(({data:e})=>{if("recurseSection"===e.action){const s={colors:e.colors,waterLevel:e.waterLevel,vertices:e.section.vertices,genParams:e.genParams,generators:e.generators.map((e=>reconstructFunction(e))),generatorSelector:reconstructFunction(e.generatorSelector)};simplex||(simplex=new SimplexNoise(e.seed||Math.random().toString()),s.state={simplex});const o=e.levels||1;recurseSection.call(s,e.section,o),postMessage({vertices:s.vertices})}}));const vertexGenerator=function*(e){for(;;)yield{norm:[0,1,0],uv:[0,1],recursions:e},yield{norm:[0,1,0],uv:[1,1],recursions:e},yield{norm:[0,1,0],uv:[0,0],recursions:e},yield{norm:[0,1,0],uv:[0,0],recursions:e},yield{norm:[0,1,0],uv:[1,1],recursions:e},yield{norm:[0,1,0],uv:[1,0],recursions:e}};
+// @ts-ignore
+import { SimplexNoise } from "https://unpkg.com/simplex-noise-esm@2.5.0-esm.0/dist-esm/simplex-noise.js";
+let simplex = null;
+const VERTICES_PER_SQUARE = 6;
+self.addEventListener("message", ({ data }) => {
+    if (data.action === "recurseSection") {
+        const context = {
+            colors: data.colors,
+            waterLevel: data.waterLevel,
+            vertices: data.section.vertices,
+            genParams: data.genParams,
+            generators: data.generators.map((f) => reconstructFunction(f)),
+            generatorSelector: reconstructFunction(data.generatorSelector),
+        };
+        if (!simplex) {
+            simplex = new SimplexNoise(data.seed || Math.random().toString());
+            context.state = { simplex };
+        }
+        const levels = data.levels || 1;
+        recurseSection.call(context, data.section, levels);
+        postMessage({
+            vertices: context.vertices,
+        });
+    }
+});
+function reconstructFunction(functionString) {
+    functionString = functionString.replace(/\S*__WEBPACK_IMPORTED_MODULE_\d+__./g, "");
+    // Some silliness to account for how webpack makes all functions single-line. Just go with it for now.
+    functionString = functionString.replace("){", "){\n");
+    functionString = functionString.replace(/}$/g, "\n}");
+    let functionCode = functionString.split("\n");
+    functionCode.pop();
+    let functionSignature = functionCode.shift();
+    functionCode = functionCode.join("\n");
+    let args = functionSignature.match(/\([^)]*\)/)[0];
+    args = args.replace("(", "").replace(")", "").split(",");
+    return Function(...args, functionCode);
+}
+// TODO: Fix code duplication with Terrainosaurus by importing these functions from a single place
+function recurseSection({ vertices, absoluteIndex }, levels = 1) {
+    for (let level = 0; level < levels; level++) {
+        // Adds one level of recursion across the entire terrain map
+        for (let i = vertices.length - 6; i > -1; i -= 6) {
+            recursivelyGenerate.call(this, i + absoluteIndex);
+        }
+    }
+}
+function recursivelyGenerate(vertexIndex) {
+    /**
+     * Replaces a given square with 4 smaller squares.
+     * Each square is represented by 6 vertices, so we can get a slice from the vertices array, create a new one, and insert it.
+     */
+    if (vertexIndex % VERTICES_PER_SQUARE) {
+        throw new Error("The given vertex does not represent the start of a cell");
+    }
+    if (!this.vertices[vertexIndex]) {
+        console.warn(`Skipping recursion: Index ${vertexIndex} exceeds bounds (${this.vertices.length})`);
+        return;
+    }
+    const verticesToReplace = this.vertices.slice(vertexIndex, vertexIndex + VERTICES_PER_SQUARE);
+    const recursions = this.vertices[vertexIndex].recursions + 1;
+    // Get 4 corners of the square to compute the centroid.
+    let replacementVertices = getSubSquares.call(this, {
+        vertices: verticesToReplace,
+        recursions,
+        vertexIndex,
+    });
+    this.vertices.splice(vertexIndex, VERTICES_PER_SQUARE, ...replacementVertices);
+}
+function getSubSquares(props) {
+    const { recursions } = props;
+    const [bottomRight, bottomLeft, topRight, _, __, topLeft] = props.vertices;
+    let center = bilinearInterpolation({
+        p1: bottomRight,
+        p2: bottomLeft,
+        p3: topRight,
+        p4: topLeft,
+    });
+    const baseVertex = vertexGenerator(recursions);
+    const newVertices = [
+        // Top left square
+        { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
+        {
+            pos: [topLeft.pos[0], (topLeft.pos[1] + bottomLeft.pos[1]) / 2, center.z],
+            ...baseVertex.next().value,
+        },
+        {
+            pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topLeft.pos[2]],
+            ...baseVertex.next().value,
+        },
+        {
+            pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topLeft.pos[2]],
+            ...baseVertex.next().value,
+        },
+        {
+            pos: [topLeft.pos[0], (topLeft.pos[1] + bottomLeft.pos[1]) / 2, center.z],
+            ...baseVertex.next().value,
+        },
+        { ...topLeft, ...baseVertex.next().value },
+        // Top right square
+        {
+            pos: [
+                topRight.pos[0],
+                (topRight.pos[1] + bottomRight.pos[1]) / 2,
+                center.z,
+            ],
+            ...baseVertex.next().value,
+        },
+        { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
+        { ...topRight, ...baseVertex.next().value },
+        { ...topRight, ...baseVertex.next().value },
+        { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
+        {
+            pos: [center.x, (topLeft.pos[1] + topRight.pos[1]) / 2, topRight.pos[2]],
+            ...baseVertex.next().value,
+        },
+        // Bottom left square
+        {
+            pos: [
+                center.x,
+                (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
+                bottomLeft.pos[2],
+            ],
+            ...baseVertex.next().value,
+        },
+        { ...bottomLeft, ...baseVertex.next().value },
+        { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
+        { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
+        { ...bottomLeft, ...baseVertex.next().value },
+        {
+            pos: [topLeft.pos[0], (topLeft.pos[1] + bottomLeft.pos[1]) / 2, center.z],
+            ...baseVertex.next().value,
+        },
+        // Bottom right square
+        { ...bottomRight, ...baseVertex.next().value },
+        {
+            pos: [
+                center.x,
+                (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
+                bottomLeft.pos[2],
+            ],
+            ...baseVertex.next().value,
+        },
+        {
+            pos: [
+                topRight.pos[0],
+                (topRight.pos[1] + bottomRight.pos[1]) / 2,
+                center.z,
+            ],
+            ...baseVertex.next().value,
+        },
+        {
+            pos: [
+                topRight.pos[0],
+                (topRight.pos[1] + bottomRight.pos[1]) / 2,
+                center.z,
+            ],
+            ...baseVertex.next().value,
+        },
+        {
+            pos: [
+                center.x,
+                (bottomLeft.pos[1] + bottomRight.pos[1]) / 2,
+                bottomLeft.pos[2],
+            ],
+            ...baseVertex.next().value,
+        },
+        { pos: [center.x, center.y, center.z], ...baseVertex.next().value },
+    ];
+    const generator = this.generators[this.generatorSelector({
+        topLeft,
+        topRight,
+        bottomLeft,
+        bottomRight,
+        vertexIndex: props.vertexIndex,
+    })];
+    center = generator.call(this, newVertices, newVertices.map((v) => this.state.simplex.noise2D(v.pos[0] / this.genParams.noiseSampleCoeff, v.pos[2] / this.genParams.noiseSampleCoeff)));
+    return newVertices;
+}
+function bilinearInterpolation(props) {
+    /**
+     * Get bilinear interpolated y-value using weighted mean method.
+     * Calculate distances from each point and normalize to get weights.
+     * Return weighted average.
+     */
+    const { p1, p2, p3, p4, isCentroid = true } = props;
+    if (isCentroid) {
+        // We expect to always do the bilinear interpolation for the centroid.
+        // This means the weights will all be 0.25 - no need for expensive distance calculations
+        const x = (p1.pos[0] + p2.pos[0] + p3.pos[0] + p4.pos[0]) / 4;
+        const y = (p1.pos[1] + p2.pos[1] + p3.pos[1] + p4.pos[1]) / 4;
+        const z = (p1.pos[2] + p2.pos[2] + p3.pos[2] + p4.pos[2]) / 4;
+        return { x, y, z };
+    }
+    else {
+        throw new Error("Oops, someone had better implement non-centroid bilinear interpolation");
+    }
+}
+const vertexGenerator = function* (recursions) {
+    while (1) {
+        yield { norm: [0, 1, 0], uv: [0, 1], recursions };
+        yield { norm: [0, 1, 0], uv: [1, 1], recursions };
+        yield { norm: [0, 1, 0], uv: [0, 0], recursions };
+        yield { norm: [0, 1, 0], uv: [0, 0], recursions };
+        yield { norm: [0, 1, 0], uv: [1, 1], recursions };
+        yield { norm: [0, 1, 0], uv: [1, 0], recursions };
+    }
+};

@@ -10,7 +10,10 @@
   <body>
     <div id="overlay">
       <div id="terraformerUi">
-        <button id="terraformBtn">Done</button>
+        <div class="button-wrapper">
+          <button class="doneBtn">terraform</button>
+          <button class="cancelBtn">cancel</button>
+        </div>
       </div>
     </div>
     <a-scene webxr="overlayElement: #overlay;" fog="type: linear; color: #AAA; density: 0.01;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: true; physicallyCorrectLights: true;">
@@ -28,7 +31,7 @@
       <a-entity id="wrapper">
         <a-cylinder id="ocean" material="transparent: true; opacity: 0.4; color: cyan; side: double;" position="0 -210 0" scale="420 420 420"></a-cylinder>
         <a-entity
-          terraformer="gestureHandler: #terraformerUi; doneBtn: #terraformBtn;"
+          terraformer="gestureHandler: #terraformerUi; doneBtn: .doneBtn; cancelBtn: .cancelBtn"
           id="terrain"
           position="0 0 0"
           scale="12 12 12"
