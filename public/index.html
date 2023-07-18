@@ -29,7 +29,10 @@
       >
       </a-entity>
       <a-entity id="wrapper">
-        <a-cylinder id="ocean" material="transparent: true; opacity: 0.4; color: cyan; side: double;" position="0 -210 0" scale="420 420 420"></a-cylinder>
+        <a-entity id="noCollide">
+          <a-cylinder id="ocean" material="transparent: true; opacity: 0.4; color: cyan; side: double;" position="0 -210 0" scale="420 420 420"></a-cylinder>
+          <a-entity id="grass" scale="12 12 12"></a-entity>
+        </a-entity>
         <a-entity
           terraformer="gestureHandler: #terraformerUi; doneBtn: .doneBtn; cancelBtn: .cancelBtn"
           id="terrain"
@@ -41,7 +44,7 @@
       </a-entity>
       <a-entity
         id="cameraRig"
-        position="0 100 30"
+        position="0 100 10"
         movement-controls="controls: keyboard; constrainToNavMesh: true"
       >
         <a-entity camera
@@ -62,13 +65,17 @@
       document.querySelector("#terrain").setAttribute(
         "terrainosaurus-terrain",
         {
-          noCollisionWrapper: "#ocean",
           wrapper: "#wrapper",
+          noCollisionWrapper: "#noCollide",
           seed: searchParams.get("id") || Math.random(),
           cameraHeight: 1.5,
           gravityEnabled: true
         }
       )
+      document.querySelector("#terrain").addEventListener("terrainInitialized", ({ detail }) => {
+        const { id: terrainosaurusId } = detail
+        document.querySelector("#grass").setAttribute("terrainosaurus-grass", { terrainosaurusId, player: "#cameraRig" })
+      })
       // document.querySelector("[cursor-teleport")?.setAttribute("cursor-teleport", {
       //   collisionEntities: ".terrainosaurus-chunk"
       // })

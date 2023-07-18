@@ -13,7 +13,7 @@ import { IRegisterProps, ITerrainosaurusProps, IVertex } from "./interfaces";
 import { Terrainosaurus } from "./Terrainosaurus";
 
 export const terrainosaurusMap: Record<string, Terrainosaurus> = {};
-const CHUNKS_NUM = 16 * 16
+export const CHUNKS_NUM = 16 * 16
 
 export function registerTerrainosaurusComponent(
   props: IRegisterProps,
@@ -122,11 +122,11 @@ export function registerTerrainosaurusComponent(
               1
             ).then(() => {
               this.updateChunkGeometries();
-              this.el.dispatchEvent(new CustomEvent("terrainInitialized", { detail: { terrainClient }}))
+              this.el.dispatchEvent(new CustomEvent("terrainInitialized", { detail: { terrainClient, id: this.terrainosaurusId }}))
             });
           })
       } else {
-        this.el.dispatchEvent(new CustomEvent("terrainInitialized", { detail: { terrainClient }}))
+        this.el.dispatchEvent(new CustomEvent("terrainInitialized", { detail: { terrainClient, id: this.terrainosaurusId }}))
       }
       
       this.el.addEventListener("terraform", (event: CustomEvent) => this.applyTerraform(event))
@@ -266,7 +266,7 @@ function getRandomId() {
   return typedArray.join("")
 }
 
-function chunkIndexToQuadrantPath(chunkIndex: number, chunkLevels: number = 4) {
+export function chunkIndexToQuadrantPath(chunkIndex: number, chunkLevels: number = 4) {
   const chunksPerSide = 2 ** chunkLevels;
   const gridPos = [
     Math.floor(chunkIndex % chunksPerSide),

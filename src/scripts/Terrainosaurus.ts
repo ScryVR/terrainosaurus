@@ -383,13 +383,6 @@ export class Terrainosaurus {
         acc.normals = acc.normals.concat(vertex.norm);
         acc.uvs = acc.uvs.concat(vertex.uv);
         acc.colors = acc.colors.concat(vertex.color);
-        // if (vertex.pos[1] > 3) {
-        //   acc.colors = acc.colors.concat(0.6, 0.6, 0.6);
-        // } else if (vertex.pos[1] < 1.2) {
-        //   acc.colors = acc.colors.concat(0.8, 0.7, 0.5);
-        // } else {
-        //   acc.colors = acc.colors.concat(0.5, 0.9, 0.5);
-        // }
         return acc;
       },
       { positions: [], normals: [], uvs: [], colors: [] }
