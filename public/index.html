@@ -16,16 +16,16 @@
         </div>
       </div>
     </div>
-    <a-scene webxr="overlayElement: #overlay;" fog="type: linear; color: #AAA; density: 0.01;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: true; physicallyCorrectLights: true;">
+    <a-scene stats webxr="overlayElement: #overlay;" fog="type: linear; color: #AAA; density: 0.01;" renderer="maxCanvasWidth: 1920; maxCanvasHeight: 1920; antialias: false; physicallyCorrectLights: true;">
       <a-assets>
         <img id="grassTexture" src="./assets/images/rock.jpg" crossorigin="anonymous" />
       </a-assets>
-      <a-entity light="type: ambient; color: #FFF; intensity: 0.2;"></a-entity>
+      <a-entity light="type: ambient; color: #FFF; intensity: 1;"></a-entity>
       <a-entity
-        light="type: directional; color: #FFF; intensity: 3"
+        light="type: directional; color: #FFF; intensity: 2"
         position="-2 1 1"
         animation="property: position; to: 2 1 1; dur: 10000; dir: alternate; loop: true;"
-        animation__intensity="property: light.intensity; to: 1; dur: 10000; dir: alternate; loop: true;"
+        animation__intensity="property: light.intensity; to: 1.5; dur: 10000; dir: alternate; loop: true;"
       >
       </a-entity>
       <a-entity id="wrapper">
@@ -44,7 +44,7 @@
       </a-entity>
       <a-entity
         id="cameraRig"
-        position="0 100 10"
+        position="0 30 10"
         movement-controls="controls: keyboard; constrainToNavMesh: true"
       >
         <a-entity camera

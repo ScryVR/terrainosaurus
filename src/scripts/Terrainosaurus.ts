@@ -70,7 +70,7 @@ export class Terrainosaurus {
     // TODO: Remove the duplicate vertices and update the indices instead
     this.vertices = this.vertices
       .concat([
-        { pos: [1, 0, 1], norm: [0, 1, 0], uv: [0, 1], recursions: 0 }, // bottom right
+        { pos: [1, 0, 1], norm: [0, 1, 1], uv: [0, 1], recursions: 0 }, // bottom right
         { pos: [-1, 0, 1], norm: [0, 1, 0], uv: [1, 1], recursions: 0 }, // bottom left
         { pos: [1, 0, -1], norm: [0, 1, 0], uv: [0, 0], recursions: 0 }, // top right
 
