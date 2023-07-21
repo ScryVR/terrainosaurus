@@ -1,9 +1,8 @@
-import { registerComponent } from "aframe";
 //@ts-ignore
 import { terrainosaurusMap } from "./terrainosaurus-terrain";
 
 // Should be added to terrainosaurus-terrain
-registerComponent("terraformer", {
+AFRAME.registerComponent("terraformer", {
   // dependencies: ["terrainosaurus-terrain"],
   schema: {
     gestureHandler: { type: "selector", default: ".a-dom-overlay" },

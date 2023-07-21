@@ -7,7 +7,7 @@
  *
  */
 
-import { AFrame, utils } from "aframe";
+import { AFrame } from "aframe";
 import { Raycaster, Vector3 } from "three";
 import { IRegisterProps, ITerrainosaurusProps, IVertex } from "./interfaces";
 import { Terrainosaurus } from "./Terrainosaurus";
@@ -19,7 +19,7 @@ export function registerTerrainosaurusComponent(
   props: IRegisterProps,
   aframe: AFrame
 ) {
-  const { registerComponent, registerGeometry } = aframe;
+  const { registerComponent, registerGeometry, utils } = aframe;
   registerComponent("terrainosaurus-terrain", {
     schema: {
       seed: { type: "int", default: 1 },
