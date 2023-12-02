@@ -56,12 +56,13 @@ export class Terrainosaurus {
       paramSeed += paramSeed;
     }
     this.genParams = {
-      islandSize: Number(`${paramSeed[0]}`) * 6 + 5 || 20,
-      landmassSlope: Number(`${paramSeed[1]}`) * 4 + 5 || 25,
+      islandSize: Number(`${paramSeed[0]}`) * 6 + 5 || 10,
+      landmassSlope: Number(`${paramSeed[1]}`) * 4 + 50 || 25,
       maxHeight: Number(`${paramSeed[2]}`) / 15 || 0.2,
       smoothness: (Number(`${paramSeed[3]}`) + 1) * 0.2 || 1,
-      plateauFactor: Number(`${paramSeed[4]}`) * 6 + 5 || 20,
-      noiseSampleCoeff: Math.ceil(Number(`${paramSeed[5]}`) / 4) + 1,
+      plateauFactor: Number(`${paramSeed[4]}`) * 6 + 5 || 10,
+      noiseSampleCoeff: 1
+      // noiseSampleCoeff: Math.ceil(Number(`${paramSeed[5]}`) / 4) + 1 || 3,
     };
   }
 

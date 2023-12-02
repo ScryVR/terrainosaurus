@@ -70,12 +70,13 @@ export const defaultGenerators: Array<(...args: any) => any> = [
           "RIGHT_MIDDLE",
         ].includes(key)
       ) {
-        // const fractalDisplacement =
-        //   (randomValues[indices[0]] * squareSize)
-        const fractalDisplacement = randomValues[indices[0]] * Math.pow(Math.abs(squareSize), 0.8) / this.genParams.smoothness / 2
+        // let fractalDisplacement = randomValues[indices[0]] * Math.pow(Math.abs(squareSize), 0.8) / this.genParams.smoothness / 2
         indices.forEach((index) => {
-          const noise = compositeNoise(vertices[index], this.state.simplex, this.genParams)
-          vertices[index].pos[1] += noise * fractalDisplacement
+          let noise = compositeNoise(vertices[index], this.state.simplex, this.genParams)
+          // vertices[index].pos[1] += noise * fractalDisplacement
+          let fractalDisplacement = Math.abs(squareSize) * randomValues[index] / 2
+          let surfaceNoise = randomValues[index] / 60
+          vertices[index].pos[1] += Math.min(1, Math.max(noise, 0)) * fractalDisplacement + surfaceNoise
 
           vertices[index].color = COLORS.GRASS
           if (randomValues[indices[0]] > 0.4) {
@@ -124,11 +125,11 @@ export const defaultGenerators: Array<(...args: any) => any> = [
         return splinedValue;
       };
   
-      let continentNoise = sampleNoise(genParams.islandSize, 100);
+      let continentNoise = sampleNoise(genParams.islandSize * 10, 100);
       continentNoise = spline(
         continentNoise,
         genParams.landmassSlope *
-          sampleNoise(genParams.islandSize, 40),
+          sampleNoise(genParams.islandSize * 10, 40),
         genParams.maxHeight
       );
   
