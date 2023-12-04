@@ -28,12 +28,12 @@ class Terrainosaurus {
         let e = this.seed.toString().replace(/[a-z]/g, "");
         for (;e.length < 10; ) e += e;
         this.genParams = {
-            islandSize: 6 * Number("" + e[0]) + 5 || 20,
-            landmassSlope: 4 * Number("" + e[1]) + 5 || 25,
+            islandSize: 6 * Number("" + e[0]) + 5 || 10,
+            landmassSlope: 4 * Number("" + e[1]) + 50 || 25,
             maxHeight: Number("" + e[2]) / 15 || .2,
             smoothness: .2 * (Number("" + e[3]) + 1) || 1,
-            plateauFactor: 6 * Number("" + e[4]) + 5 || 20,
-            noiseSampleCoeff: Math.ceil(Number("" + e[5]) / 4) + 1
+            plateauFactor: 6 * Number("" + e[4]) + 5 || 10,
+            noiseSampleCoeff: 1
         };
     }
     setInitialVertices(s) {

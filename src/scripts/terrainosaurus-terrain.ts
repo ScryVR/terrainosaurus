@@ -41,7 +41,7 @@ export function registerTerrainosaurusComponent(
     applyTerraform(event: CustomEvent) {
       // TODO: Figure out which chunks need to be rerendered and only rerender those.
       //       For now, I'm just rerendering the entire geometry :O
-      const transformFilter = (x: number, z: number) => {
+      const transformFilter = (x: number, y: number, z: number) => {
         const match = event.detail.vertices.find((v: IVertex) => {
           return v.pos[0] === x && v.pos[2] === z
         })
@@ -201,6 +201,11 @@ export function registerTerrainosaurusComponent(
       transformer: Function
     ) {
       const name = `terrainosaurus-${getRandomId()}`;
+      const [plateauFilter, plateauTransformer] = plateauGeneratorFactory()
+      if (terrainClient.vertices[0].recursions === 7) {
+        transformFilter = plateauFilter
+        transformer = plateauTransformer
+      }
       registerGeometry(name, {
         init() {
           let section = terrainClient.getSection(path)
@@ -316,4 +321,23 @@ function chunkIndexToQuadrantPath(chunkIndex: number, chunkLevels: number = 4) {
 
 function vectorToNumberArray(vector: Vector3) {
   return [vector.x, vector.y, vector.z]
+}
+
+/**
+ * Returns a function that can be sampled to determine whether a given area is a plateau.
+ * Returns a function that will modify a vertex's height in order to create a plateau.
+ **/ 
+
+function plateauGeneratorFactory() {
+  const sampler = (x: number, y: number, z: number) => {
+    // TODO: Use noise sampling to generate plateau map
+    if (y > 1.2) {
+      return true
+    }
+    return false
+  }
+  const transformer = ([x, y, z]: Array<number>, transformation: Array<number>) => {
+    return [x, 1.2, z]
+  }
+  return [sampler, transformer]
 }

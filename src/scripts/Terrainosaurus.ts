@@ -61,7 +61,7 @@ export class Terrainosaurus {
       maxHeight: Number(`${paramSeed[2]}`) / 15 || 0.2,
       smoothness: (Number(`${paramSeed[3]}`) + 1) * 0.2 || 1,
       plateauFactor: Number(`${paramSeed[4]}`) * 6 + 5 || 10,
-      noiseSampleCoeff: 1
+      noiseSampleCoeff: 2
       // noiseSampleCoeff: Math.ceil(Number(`${paramSeed[5]}`) / 4) + 1 || 3,
     };
   }
@@ -373,7 +373,7 @@ export class Terrainosaurus {
     const { positions, normals, uvs, colors } = section.vertices.reduce(
       (acc: any, vertex, index) => {
         const _vertex = this.transformedVertices[index + section.absoluteIndex] || vertex
-        const transformation = transformerFilter(_vertex.pos[0], _vertex.pos[2])
+        const transformation = transformerFilter(_vertex.pos[0], _vertex.pos[1], _vertex.pos[2])
         if (transformation) {
           const transformedPos = transformer(_vertex.pos, transformation)
           this.transformedVertices[index + section.absoluteIndex] = { ..._vertex, pos: transformedPos }
