@@ -76,7 +76,7 @@ export const defaultGenerators: Array<(...args: any) => any> = [
           // vertices[index].pos[1] += noise * fractalDisplacement
           let fractalDisplacement = Math.abs(squareSize) * randomValues[index] / 2
           let surfaceNoise = randomValues[index] / 60
-          vertices[index].pos[1] += Math.min(1, Math.max(noise, 0)) * fractalDisplacement + surfaceNoise
+          vertices[index].pos[1] += Math.min(1, Math.max(noise, 0.1)) * fractalDisplacement + surfaceNoise
 
           vertices[index].color = COLORS.GRASS
           if (randomValues[indices[0]] > 0.4) {

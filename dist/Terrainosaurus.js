@@ -33,7 +33,7 @@ class Terrainosaurus {
             maxHeight: Number("" + e[2]) / 15 || .2,
             smoothness: .2 * (Number("" + e[3]) + 1) || 1,
             plateauFactor: 6 * Number("" + e[4]) + 5 || 10,
-            noiseSampleCoeff: 1
+            noiseSampleCoeff: 2
         };
     }
     setInitialVertices(s) {
@@ -229,7 +229,7 @@ class Terrainosaurus {
             uvs: r,
             colors: o
         } = i.vertices.reduce((e, s, t) => {
-            var r = this.transformedVertices[t + i.absoluteIndex] || s, o = n(r.pos[0], r.pos[2]);
+            var r = this.transformedVertices[t + i.absoluteIndex] || s, o = n(r.pos[0], r.pos[1], r.pos[2]);
             return o ? (o = a(r.pos, o), this.transformedVertices[t + i.absoluteIndex] = {
                 ...r,
                 pos: o

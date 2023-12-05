@@ -61,7 +61,7 @@ export class Terrainosaurus {
       maxHeight: Number(`${paramSeed[2]}`) / 15 || 0.2,
       smoothness: (Number(`${paramSeed[3]}`) + 1) * 0.2 || 1,
       plateauFactor: Number(`${paramSeed[4]}`) * 6 + 5 || 10,
-      noiseSampleCoeff: 2
+      noiseSampleCoeff: 3
       // noiseSampleCoeff: Math.ceil(Number(`${paramSeed[5]}`) / 4) + 1 || 3,
     };
   }

@@ -331,14 +331,40 @@ function vecToArr(vector: Vector3) {
 
 function plateauGeneratorFactory(simplex: any) {
   const sampler = (x: number, y: number, z: number) => {
-    const noise = simplex.noise2D(x / 50, z / 50)
-    const multispline = (x: number) => {
-      return 2 * Math.atan(x) +  2 * Math.atan(z - 2) + 4
+    const noise1 = simplex.noise2D(x / 20, z / 20)
+    const noise2 = simplex.noise2D(x / 40 + 100, z / 40 + 100)
+    const noise3 = simplex.noise2D(x / 60 + 300, z / 60 + 300)
+    const noise4 = simplex.noise2D(x / 100 + 500, z / 100 + 500)
+    const multispline = (signal1: number, signal2: number, signal3: number, signal4: number) => {
+      let output = Math.max(Math.atan(2 * signal1), 1) +  Math.max(Math.atan(2 * signal2 - 4), 1) - 0.4
+      const spline3 = Math.atan(signal3)
+      if (spline3 < 0.4) {
+        output -= Math.max(0, 2 * spline3)
+      }
+      if (signal2 > signal1) {
+        output += Math.atan(2 * (signal2 - signal1))
+      }
+      if (noise4 > 0.5) {
+        output *= 2
+      }
+      return output
     }
-    const threshold = Math.max(multispline(noise), 0.1)
-    if (y > threshold) {
-      const pControl = (y - threshold - 0.1) * 0.9
+    const threshold = Math.max(multispline(noise1, noise2, noise3, noise4), 0.1)
+    if (y > threshold || threshold - y < 0.15) {
+      const pControl = (y - threshold - 0.1) * 0.8
       return [x, y - pControl, z]
+    }
+    if (y < 0.01) {
+      let yTransformation = 0.2
+      if (y < -0.1) {
+        yTransformation += 0.2
+      }
+      if (y < -0.2) {
+        yTransformation += 0.2
+      }
+      const target = y - yTransformation
+      const pControl = (target - y) * 0.3
+      return [x, y + pControl, z]
     }
     return false
   }
