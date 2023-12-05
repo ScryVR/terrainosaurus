@@ -62,10 +62,10 @@ export function registerTerrainosaurusComponent(
       const terrainosarusProps = {
         ...props,
         colors: {
-          GRASS: vectorToNumberArray(this.data.grassColor),
-          DIRT: vectorToNumberArray(this.data.dirtColor),
-          STONE: vectorToNumberArray(this.data.stoneColor),
-          SAND: vectorToNumberArray(this.data.sandColor),
+          GRASS: vecToArr(this.data.grassColor),
+          DIRT: vecToArr(this.data.dirtColor),
+          STONE: vecToArr(this.data.stoneColor),
+          SAND: vecToArr(this.data.sandColor),
         },
         size: this.data.size,
         seed: this.data.seed,
@@ -201,7 +201,8 @@ export function registerTerrainosaurusComponent(
       transformer: Function
     ) {
       const name = `terrainosaurus-${getRandomId()}`;
-      const [plateauFilter, plateauTransformer] = plateauGeneratorFactory()
+      const simplex = terrainClient.state.simplex
+      const [plateauFilter, plateauTransformer] = plateauGeneratorFactory(simplex)
       if (terrainClient.vertices[0].recursions === 7) {
         transformFilter = plateauFilter
         transformer = plateauTransformer
@@ -319,7 +320,7 @@ function chunkIndexToQuadrantPath(chunkIndex: number, chunkLevels: number = 4) {
   return path;
 }
 
-function vectorToNumberArray(vector: Vector3) {
+function vecToArr(vector: Vector3) {
   return [vector.x, vector.y, vector.z]
 }
 
@@ -328,16 +329,21 @@ function vectorToNumberArray(vector: Vector3) {
  * Returns a function that will modify a vertex's height in order to create a plateau.
  **/ 
 
-function plateauGeneratorFactory() {
+function plateauGeneratorFactory(simplex: any) {
   const sampler = (x: number, y: number, z: number) => {
-    // TODO: Use noise sampling to generate plateau map
-    if (y > 1.2) {
-      return true
+    const noise = simplex.noise2D(x / 50, z / 50)
+    const multispline = (x: number) => {
+      return 2 * Math.atan(x) +  2 * Math.atan(z - 2) + 4
+    }
+    const threshold = Math.max(multispline(noise), 0.1)
+    if (y > threshold) {
+      const pControl = (y - threshold - 0.1) * 0.9
+      return [x, y - pControl, z]
     }
     return false
   }
   const transformer = ([x, y, z]: Array<number>, transformation: Array<number>) => {
-    return [x, 1.2, z]
+    return [x, transformation[1], z]
   }
   return [sampler, transformer]
 }
